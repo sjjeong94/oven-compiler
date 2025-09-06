@@ -4,6 +4,7 @@ set (LIBS
     ${dialect_libs}
     MLIROven
     MLIROptLib
+    OvenToLLVM
 )
 
 add_llvm_executable(oven-opt oven-opt.cpp)

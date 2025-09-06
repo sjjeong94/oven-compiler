@@ -1,5 +1,5 @@
-#ifndef LIB_OVENOPS_TD_
-#define LIB_OVENOPS_TD_
+#ifndef OVENOPS_TD_
+#define OVENOPS_TD_
 
 include "mlir/IR/OpBase.td"
 
@@ -40,18 +40,19 @@ def Oven_ThreadIdxXOp   : Oven_IdxOp<"thread_idx.x",   "Get threadIdx.x">;
 def Oven_ThreadIdxYOp   : Oven_IdxOp<"thread_idx.y",   "Get threadIdx.y">;
 def Oven_ThreadIdxZOp   : Oven_IdxOp<"thread_idx.z",   "Get threadIdx.z">;
 
+
 def Oven_LoadOp : Op<Oven_Dialect, "load"> {
   let summary = "Load from memory";
-  let arguments = (ins RankedTensorOf<[F32]>:$ptr, I32:$offset);
+  let arguments = (ins AnyType:$ptr, I32:$offset);
   let results = (outs F32:$value);
   let assemblyFormat = "$ptr `,` $offset attr-dict `:` `(` type($ptr) `,` type($offset) `)` `->` type($value)";
 }
 
 def Oven_StoreOp : Op<Oven_Dialect, "store"> {
   let summary = "Store to memory";
-  let arguments = (ins F32:$value, RankedTensorOf<[F32]>:$ptr, I32:$offset);
+  let arguments = (ins F32:$value, AnyType:$ptr, I32:$offset);
   let results = (outs);
   let assemblyFormat = "$value `,` $ptr `,` $offset attr-dict `:` `(` type($value) `,` type($ptr) `,` type($offset) `)`";
 }
 
-#endif  // LIB_OVENOPS_TD_
+#endif  // OVENOPS_TD_

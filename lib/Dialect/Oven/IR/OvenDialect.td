@@ -1,5 +1,5 @@
-#ifndef LIB_OVENDIALECT_TD_
-#define LIB_OVENDIALECT_TD_
+#ifndef OVENDIALECT_TD_
+#define OVENDIALECT_TD_
 
 include "mlir/IR/DialectBase.td"
 
@@ -13,4 +13,4 @@ def Oven_Dialect : Dialect {
   let cppNamespace = "::mlir::oven";
 }
 
-#endif  // LIB_OVENDIALECT_TD_
+#endif  // OVENDIALECT_TD_
