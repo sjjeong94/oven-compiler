@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "*.mlir": "mlir",
+        "*.inc": "cpp"
+    },
+    "files.exclude": {
+        "llvm-project": true
+    },
+    "search.exclude": {
+        "llvm-project": true
+    }
+}
