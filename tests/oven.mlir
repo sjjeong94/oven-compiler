@@ -11,6 +11,8 @@ module {
     %7 = arith.muli %0, %6 : i32
     %8 = arith.addi %7, %3 : i32
 
+    %11 = llvm.add %7, %3 : i32
+
     %9 = oven.load %a, %8 : (tensor<4096xf32>, i32) -> f32
     oven.store %9, %b, %8 : (f32, tensor<4096xf32>, i32)
 
