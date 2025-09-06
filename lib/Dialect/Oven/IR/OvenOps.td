@@ -5,14 +5,39 @@ include "mlir/IR/OpBase.td"
 
 include "OvenDialect.td"
 
+class Oven_UnaryOp<string mnemonic> : Op<Oven_Dialect, mnemonic> {
+  let arguments = (ins F32:$lhs);
+  let results = (outs F32:$output);
+  let assemblyFormat = "$lhs attr-dict `:` type($lhs) `->` type($output)";
+}
+
 class Oven_BinOp<string mnemonic> : Op<Oven_Dialect, mnemonic> {
-  let arguments = (ins I32:$lhs, I32:$rhs);
-  let results = (outs I32:$output);
+  let arguments = (ins F32:$lhs, F32:$rhs);
+  let results = (outs F32:$output);
   let assemblyFormat = "$lhs `,` $rhs attr-dict `:` `(` type($lhs) `,` type($rhs) `)` `->` type($output)";
 }
 
 def Oven_AddOp : Oven_BinOp<"add"> {
   let summary = "Addition operation";
 }
+
+def Oven_SigmoidOp : Oven_UnaryOp<"sigmoid"> {
+  let summary = "Sigmoid";
+}
+
+
+class Oven_IdxOp<string name, string desc> : Op<Oven_Dialect, name> {
+  let summary = desc;
+  let arguments = (ins);
+  let results = (outs I32:$result);
+  let assemblyFormat = "attr-dict `:` type($result)";
+}
+
+def Oven_BlockIdxXOp    : Oven_IdxOp<"block_idx.x",    "Get blockIdx.x">;
+def Oven_BlockIdxYOp    : Oven_IdxOp<"block_idx.y",    "Get blockIdx.y">;
+def Oven_BlockIdxZOp    : Oven_IdxOp<"block_idx.z",    "Get blockIdx.z">;
+def Oven_ThreadIdxXOp   : Oven_IdxOp<"thread_idx.x",   "Get threadIdx.x">;
+def Oven_ThreadIdxYOp   : Oven_IdxOp<"thread_idx.y",   "Get threadIdx.y">;
+def Oven_ThreadIdxZOp   : Oven_IdxOp<"thread_idx.z",   "Get threadIdx.z">;
 
 #endif  // LIB_OVENOPS_TD_
