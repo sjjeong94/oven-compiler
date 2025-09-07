@@ -4,6 +4,7 @@ set (LIBS
     ${dialect_libs}
     MLIROven
     MLIROptLib
+    OvenPasses
     OvenToLLVM
 )
 

@@ -1,6 +1,7 @@
 module {
   func.func @test_llvm(%a: f32, %b: f32) -> (f32, f32) {
-    return %a, %b : f32, f32
+    %0 = math.exp %a : f32
+    return %0, %b : f32, f32
   }
 
   func.func @test_load_store(%a: !llvm.ptr, %b: !llvm.ptr) {
