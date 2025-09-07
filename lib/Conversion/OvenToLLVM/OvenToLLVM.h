@@ -1,11 +1,7 @@
 #ifndef OVENTOLLVM_H_
 #define OVENTOLLVM_H_
 
-#include "mlir/Pass/Pass.h" // from @llvm-project
-
-// Extra includes needed for dependent dialects
-#include "mlir/Dialect/Arith/IR/Arith.h"   // from @llvm-project
-#include "mlir/Dialect/Tensor/IR/Tensor.h" // from @llvm-project
+#include "mlir/Pass/Pass.h"
 
 namespace mlir {
 namespace oven {

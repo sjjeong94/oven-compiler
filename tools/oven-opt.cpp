@@ -8,6 +8,7 @@
 
 #include "mlir/Tools/mlir-opt/MlirOptMain.h"
 
+#include "lib/Conversion/AddNVVMKernel/AddNVVMKernel.h"
 #include "lib/Conversion/OvenToLLVM/OvenToLLVM.h"
 #include "lib/Dialect/Oven/IR/OvenDialect.h"
 #include "lib/Dialect/Oven/Transform/Passes.h"
@@ -19,12 +20,12 @@ void ovenToLLVMPipelineBuilder(mlir::OpPassManager &manager) {
   manager.addPass(mlir::createArithToLLVMConversionPass());
   manager.addPass(mlir::createConvertMathToLLVMPass());
   manager.addPass(mlir::createConvertFuncToLLVMPass());
+  manager.addPass(mlir::oven::createAddNVVMKernel());
 }
 
 int main(int argc, char **argv) {
   mlir::DialectRegistry registry;
   registry.insert<mlir::oven::OvenDialect>();
-  registry.insert<mlir::NVVM::NVVMDialect>();
   mlir::registerAllDialects(registry);
 
   mlir::PassPipelineRegistration<>(

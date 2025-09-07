@@ -6,6 +6,7 @@ set (LIBS
     MLIROptLib
     OvenPasses
     OvenToLLVM
+    AddNVVMKernel
 )
 
 add_llvm_executable(oven-opt oven-opt.cpp)

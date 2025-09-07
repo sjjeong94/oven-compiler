@@ -11,6 +11,7 @@ def OptimizeOven : Pass<"optimize-oven"> {
   }];
   let dependentDialects = [
     "mlir::arith::ArithDialect",
+    "mlir::math::MathDialect",
     "mlir::oven::OvenDialect",
   ];
 }
