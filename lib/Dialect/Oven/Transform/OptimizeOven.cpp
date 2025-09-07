@@ -22,9 +22,15 @@ struct DecomposeExpPattern : public OpRewritePattern<math::ExpOp> {
 
   LogicalResult matchAndRewrite(math::ExpOp op,
                                 PatternRewriter &rewriter) const override {
-    llvm::outs() << "decomposing exp...\n";
-    llvm::outs() << op << "\n";
-    return failure();
+    arith::ConstantOp constant = rewriter.create<arith::ConstantOp>(
+        op.getLoc(), rewriter.getF32FloatAttr(1.442695));
+    arith::MulFOp mul = rewriter.create<arith::MulFOp>(
+        op.getLoc(), op.getType(), op.getOperand(), constant.getResult());
+
+    math::Exp2Op exp2 = rewriter.create<math::Exp2Op>(op.getLoc(), op.getType(),
+                                               mul.getResult());
+    rewriter.replaceOp(op, exp2);
+    return success();
   }
 };
 
@@ -32,7 +38,6 @@ struct OptimizeOven : impl::OptimizeOvenBase<OptimizeOven> {
   using OptimizeOvenBase::OptimizeOvenBase;
 
   void runOnOperation() {
-    llvm::outs() << "optimizing oven...\n";
     mlir::RewritePatternSet patterns(&getContext());
     patterns.add<DecomposeExpPattern>(&getContext());
     (void)applyPatternsGreedily(getOperation(), std::move(patterns));
