@@ -55,4 +55,11 @@ def Oven_StoreOp : Op<Oven_Dialect, "store"> {
   let assemblyFormat = "$value `,` $ptr `,` $offset attr-dict `:` `(` type($value) `,` type($ptr) `,` type($offset) `)`";
 }
 
+def Oven_SmemOp : Op<Oven_Dialect, "smem"> {
+  let summary = "Declare shared memory";
+  let arguments = (ins);
+  let results = (outs AnyType:$ptr);
+  let assemblyFormat = "attr-dict `:` type($ptr)";
+}
+
 #endif  // OVENOPS_TD_

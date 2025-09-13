@@ -54,6 +54,32 @@ struct ConvertStore : public OpConversionPattern<oven::StoreOp> {
   }
 };
 
+struct ConvertSmem : public OpConversionPattern<oven::SmemOp> {
+  ConvertSmem(mlir::MLIRContext *context)
+      : OpConversionPattern<oven::SmemOp>(context) {}
+
+  using OpConversionPattern::OpConversionPattern;
+
+  mutable int smemCount = 0;
+
+  LogicalResult
+  matchAndRewrite(oven::SmemOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    std::string symbolName = "smem" + std::to_string(smemCount++);
+    auto symbol = SymbolRefAttr::get(rewriter.getContext(), symbolName);
+    auto ptrType = LLVM::LLVMPointerType::get(rewriter.getContext(), 3);
+    auto moduleOp = op->getParentOfType<mlir::ModuleOp>();
+    OpBuilder builder(moduleOp.getBody(), moduleOp.getBody()->begin());
+    builder.create<LLVM::GlobalOp>(moduleOp.getLoc(), ptrType, false,
+                                   LLVM::Linkage::External, symbolName,
+                                   Attribute(), 16, 3);
+    auto addressofOp =
+        rewriter.create<LLVM::AddressOfOp>(op.getLoc(), ptrType, symbol);
+    rewriter.replaceOp(op, addressofOp);
+    return success();
+  }
+};
+
 struct OvenToLLVM : impl::OvenToLLVMBase<OvenToLLVM> {
   using OvenToLLVMBase::OvenToLLVMBase;
 
@@ -68,7 +94,7 @@ struct OvenToLLVM : impl::OvenToLLVMBase<OvenToLLVM> {
     target.addIllegalDialect<oven::OvenDialect>();
 
     RewritePatternSet patterns(context);
-    patterns.add<ConvertLoad, ConvertStore>(context);
+    patterns.add<ConvertLoad, ConvertStore, ConvertSmem>(context);
 
     if (failed(applyPartialConversion(module, target, std::move(patterns)))) {
       signalPassFailure();
