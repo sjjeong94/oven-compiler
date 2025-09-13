@@ -70,8 +70,10 @@ struct ConvertSmem : public OpConversionPattern<oven::SmemOp> {
     auto symbol = SymbolRefAttr::get(rewriter.getContext(), symbolName);
     auto ptrType = LLVM::LLVMPointerType::get(rewriter.getContext(), 3);
     auto moduleOp = op->getParentOfType<mlir::ModuleOp>();
+    auto i8Type = mlir::IntegerType::get(rewriter.getContext(), 8);
+    auto arrayType = mlir::LLVM::LLVMArrayType::get(i8Type, 0);
     OpBuilder builder(moduleOp.getBody(), moduleOp.getBody()->begin());
-    builder.create<LLVM::GlobalOp>(moduleOp.getLoc(), ptrType, false,
+    builder.create<LLVM::GlobalOp>(moduleOp.getLoc(), arrayType, false,
                                    LLVM::Linkage::External, symbolName,
                                    Attribute(), 16, 3);
     auto addressofOp =
