@@ -1,6 +1,6 @@
 
 func.func @test_load_store(%a: !llvm.ptr, %b: !llvm.ptr) {
-  %0 = arith.constant 128 : i32
+  %0 = nvvm.read.ptx.sreg.ntid.x : i32
   %1 = nvvm.read.ptx.sreg.ctaid.x : i32
   %2 = nvvm.read.ptx.sreg.tid.x : i32
   %3 = arith.muli %1, %0 : i32

@@ -2,7 +2,7 @@
 func.func @function(%a: !llvm.ptr, %b: !llvm.ptr) {
   %smem = oven.smem : !llvm.ptr<3>
   %smem2 = oven.smem : !llvm.ptr<3>
-  %0 = arith.constant 128 : i32
+  %0 = nvvm.read.ptx.sreg.ntid.x : i32
   %1 = nvvm.read.ptx.sreg.ctaid.x : i32
   %2 = nvvm.read.ptx.sreg.tid.x : i32
   %3 = arith.muli %1, %0 : i32

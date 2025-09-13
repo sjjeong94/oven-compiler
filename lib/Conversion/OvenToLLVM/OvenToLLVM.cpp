@@ -4,6 +4,7 @@
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/Func/Transforms/FuncConversions.h"
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
+#include "mlir/Dialect/SCF/IR/SCF.h"
 #include "mlir/IR/ImplicitLocOpBuilder.h"
 #include "mlir/Transforms/DialectConversion.h"
 
@@ -88,6 +89,7 @@ struct OvenToLLVM : impl::OvenToLLVMBase<OvenToLLVM> {
     auto *module = getOperation();
 
     ConversionTarget target(*context);
+    target.addLegalDialect<scf::SCFDialect>();
     target.addLegalDialect<arith::ArithDialect>();
     target.addLegalDialect<func::FuncDialect>();
     target.addLegalDialect<LLVM::LLVMDialect>();
