@@ -1,133 +1,165 @@
 #!/usr/bin/env python3
 """
-Setup script for Oven MLIR Python bindings
+Setup script for oven-mlir package with native module support.
+
+This script ensures that wheels are built with the correct platform tags
+when native modules are included.
 """
 
 import os
 import sys
-import subprocess
-from pathlib import Path
+import glob
+from setuptools import setup, find_packages
+from setuptools.command.build_py import build_py
 
-from setuptools import setup, Extension
-from setuptools.command.build_ext import build_ext
+# Try to import bdist_wheel, fall back if not available
+try:
+    from wheel.bdist_wheel import bdist_wheel
+except ImportError:
+    try:
+        from setuptools.command.bdist_wheel import bdist_wheel
+    except ImportError:
+        bdist_wheel = None
+
+import platform
 
 
-class CMakeExtension(Extension):
-    """A Python extension that is built using CMake"""
+class CustomBuildPy(build_py):
+    """Custom build command that ensures native modules are included."""
 
-    def __init__(self, name, sourcedir=""):
-        Extension.__init__(self, name, sources=[])
-        self.sourcedir = os.path.abspath(sourcedir)
+    def run(self):
+        super().run()
+
+        # Copy native modules to build directory
+        native_modules = (
+            glob.glob("oven_mlir/*.so")
+            + glob.glob("oven_mlir/*.pyd")
+            + glob.glob("oven_mlir/*.dll")
+            + glob.glob("oven_mlir/*.dylib")
+        )
+
+        if native_modules:
+            print(f"Found native modules: {native_modules}")
+
+            # Ensure build directory exists
+            build_lib = self.build_lib
+            target_dir = os.path.join(build_lib, "oven_mlir")
+            os.makedirs(target_dir, exist_ok=True)
+
+            # Copy native modules
+            for module in native_modules:
+                target = os.path.join(target_dir, os.path.basename(module))
+                self.copy_file(module, target)
+                print(f"Copied {module} -> {target}")
 
 
-class CMakeBuild(build_ext):
-    """Custom build command that uses CMake to build the extension"""
+class CustomBdistWheel(bdist_wheel if bdist_wheel else object):
+    """Custom wheel building that forces platform-specific tags."""
 
-    def build_extension(self, ext):
-        if not isinstance(ext, CMakeExtension):
-            super().build_extension(ext)
-            return
+    def finalize_options(self):
+        if bdist_wheel:
+            super().finalize_options()
 
-        extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
+        # Check if we have native modules
+        has_native = any(
+            glob.glob(pattern)
+            for pattern in [
+                "oven_mlir/*.so",
+                "oven_mlir/*.pyd",
+                "oven_mlir/*.dll",
+                "oven_mlir/*.dylib",
+            ]
+        )
 
-        # required for auto-detection of auxiliary "native" libs
-        if not extdir.endswith(os.path.sep):
-            extdir += os.path.sep
-
-        cmake_args = [
-            f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}",
-            f"-DPYTHON_EXECUTABLE={sys.executable}",
-            f"-DMLIR_DIR={ext.sourcedir}/llvm-project/build/lib/cmake/mlir",
-            f"-DLLVM_DIR={ext.sourcedir}/llvm-project/build/lib/cmake/llvm",
-        ]
-
-        cfg = "Debug" if self.debug else "Release"
-        build_args = ["--config", cfg]
-
-        # Platform-specific arguments
-        if sys.platform.startswith("win"):
-            cmake_args += [f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{cfg.upper()}={extdir}"]
-            if sys.maxsize > 2**32:
-                cmake_args += ["-A", "x64"]
-            build_args += ["--", "/m"]
+        if has_native:
+            # Force platform-specific wheel
+            self.root_is_pure = False
+            print("Native modules detected - building platform-specific wheel")
         else:
-            cmake_args += [f"-DCMAKE_BUILD_TYPE={cfg}"]
-            build_args += ["--", "-j4"]
+            print("No native modules found - building universal wheel")
 
-        env = os.environ.copy()
-        env["CXXFLAGS"] = (
-            f"{env.get('CXXFLAGS', '')} -DVERSION_INFO=\"{self.distribution.get_version()}\""
+    def get_tag(self):
+        if not bdist_wheel:
+            return "py3", "none", "any"
+
+        # Get the default tag
+        python, abi, plat = super().get_tag()
+
+        # Check if we have native modules
+        has_native = any(
+            glob.glob(pattern)
+            for pattern in [
+                "oven_mlir/*.so",
+                "oven_mlir/*.pyd",
+                "oven_mlir/*.dll",
+                "oven_mlir/*.dylib",
+            ]
         )
 
-        build_temp = Path(self.build_temp)
-        build_temp.mkdir(parents=True, exist_ok=True)
+        if has_native:
+            # Use manylinux tags for PyPI compatibility
+            if plat == "any" or plat.startswith("linux"):
+                # Determine actual platform
+                if sys.platform.startswith("linux"):
+                    # Use manylinux2014 for better compatibility with modern systems
+                    arch = platform.machine()
+                    if arch == "x86_64":
+                        plat = "manylinux2014_x86_64"
+                    elif arch == "i686":
+                        plat = "manylinux2014_i686"
+                    elif arch == "aarch64":
+                        plat = "manylinux2014_aarch64"
+                    else:
+                        plat = f"manylinux2014_{arch}"
+                elif sys.platform == "darwin":
+                    mac_ver = platform.mac_ver()[0].replace(".", "_")
+                    plat = f"macosx_{mac_ver}_{platform.machine()}"
+                elif sys.platform == "win32":
+                    arch = platform.machine().lower()
+                    if arch in ["amd64", "x86_64"]:
+                        plat = "win_amd64"
+                    elif arch in ["i386", "i686"]:
+                        plat = "win32"
+                    else:
+                        plat = f"win_{arch}"
 
-        # Check if we need to find nanobind
-        try:
-            import nanobind
+            print(f"Using platform tag: {plat}")
 
-            cmake_args.append(f"-Dnanobind_DIR={nanobind.cmake_dir()}")
-        except ImportError:
-            print("Warning: nanobind not found, trying system installation")
-
-        # Configure
-        subprocess.check_call(
-            ["cmake", ext.sourcedir] + cmake_args, cwd=build_temp, env=env
-        )
-
-        # Build only the Python extension target
-        subprocess.check_call(
-            ["cmake", "--build", ".", "--target", "oven_opt_py"] + build_args,
-            cwd=build_temp,
-        )
+        return python, abi, plat
 
 
-# Read the README file
-def read_readme():
-    readme_path = Path(__file__).parent / "README.md"
-    if readme_path.exists():
-        with open(readme_path, "r", encoding="utf-8") as f:
-            return f.read()
-    return "Oven MLIR Python Bindings"
+def has_native_modules():
+    """Check if native modules are present."""
+    patterns = [
+        "oven_mlir/*.so",
+        "oven_mlir/*.pyd",
+        "oven_mlir/*.dll",
+        "oven_mlir/*.dylib",
+    ]
+
+    for pattern in patterns:
+        if glob.glob(pattern):
+            return True
+    return False
 
 
-setup(
-    name="oven-mlir",
-    version="0.1.0",
-    description="Python bindings for Oven MLIR compiler",
-    long_description=read_readme(),
-    long_description_content_type="text/markdown",
-    author="Sinjin Jeong",
-    author_email="sjjeong94@gmail.com",
-    url="https://github.com/sjjeong94/oven",
-    packages=["oven_mlir"],
-    ext_modules=[CMakeExtension("oven_mlir.oven_opt_py")],
-    cmdclass={"build_ext": CMakeBuild},
-    python_requires=">=3.8",
-    install_requires=["numpy>=1.20.0"],
-    extras_require={
-        "dev": ["pytest>=6.0", "pytest-cov", "black", "isort", "flake8"],
-        "docs": ["sphinx", "sphinx-rtd-theme", "myst-parser"],
-    },
-    entry_points={
-        "console_scripts": [
-            "oven-compile=oven_mlir.cli:main",
-        ],
-    },
-    classifiers=[
-        "Development Status :: 3 - Alpha",
-        "Intended Audience :: Developers",
-        "Intended Audience :: Science/Research",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: POSIX :: Linux",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: C++",
-        "Topic :: Scientific/Engineering",
-        "Topic :: Software Development :: Compilers",
-    ],
-    zip_safe=False,
-)
+if __name__ == "__main__":
+    # Check for native modules
+    native_present = has_native_modules()
+    print(f"Native modules present: {native_present}")
+
+    if native_present:
+        native_files = []
+        for pattern in ["*.so", "*.pyd", "*.dll", "*.dylib"]:
+            native_files.extend(glob.glob(f"oven_mlir/{pattern}"))
+        print(f"Native files: {native_files}")
+
+    # Prepare cmdclass
+    cmdclass = {
+        "build_py": CustomBuildPy,
+    }
+
+    if bdist_wheel:
+        cmdclass["bdist_wheel"] = CustomBdistWheel
+
+    setup(cmdclass=cmdclass)

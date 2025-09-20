@@ -59,27 +59,49 @@ if _NATIVE_MODULE_AVAILABLE:
         class PythonToPTXCompiler:
             def __init__(self, *args, **kwargs):
                 raise ImportError(
-                    "oven-compiler is required for Python to PTX compilation. Install with: pip install oven-compiler"
+                    "oven-compiler dependency issue. Try reinstalling: pip install --force-reinstall oven-mlir"
                 )
 
         def compile_python_string_to_ptx(*args, **kwargs):
             raise ImportError(
-                "oven-compiler is required for Python to PTX compilation. Install with: pip install oven-compiler"
+                "oven-compiler dependency issue. Try reinstalling: pip install --force-reinstall oven-mlir"
             )
 
         def compile_python_file_to_ptx(*args, **kwargs):
             raise ImportError(
-                "oven-compiler is required for Python to PTX compilation. Install with: pip install oven-compiler"
+                "oven-compiler dependency issue. Try reinstalling: pip install --force-reinstall oven-mlir"
             )
 
 else:
     # Provide helpful error messages when native module is not available
+    import platform as _platform
+
+    _ERROR_MESSAGE = f"""
+Native MLIR module not available: {_IMPORT_ERROR}
+
+This usually happens when:
+1. The package was installed without native modules (wheel not compatible with your platform)
+2. Required system libraries are missing
+3. The package was built for a different Python version
+
+Solutions:
+1. Install platform-specific wheel: pip install --force-reinstall --no-deps oven-mlir
+2. For Python-to-PTX only: pip install oven-compiler
+3. Build from source with MLIR support
+
+Platform-specific wheels available for: linux_x86_64, macos_x86_64, win_amd64
+Current platform: {_platform.platform()}
+"""
+
     class _MissingNativeModule:
         def __init__(self, name):
             self.name = name
 
         def __call__(self, *args, **kwargs):
-            raise ImportError(f"Native module not available: {_IMPORT_ERROR}")
+            raise ImportError(_ERROR_MESSAGE)
+
+        def __getattr__(self, name):
+            raise ImportError(_ERROR_MESSAGE)
 
     OvenOptimizer = _MissingNativeModule("OvenOptimizer")
     OvenCompiler = _MissingNativeModule("OvenCompiler")
@@ -88,7 +110,6 @@ else:
     to_llvm_ir = _MissingNativeModule("to_llvm_ir")
     to_ptx = _MissingNativeModule("to_ptx")
     optimize_and_convert = _MissingNativeModule("optimize_and_convert")
-    compile_oven_mlir = _MissingNativeModule("compile_oven_mlir")
     compile_oven_mlir = _MissingNativeModule("compile_oven_mlir")
 
 # Export public API

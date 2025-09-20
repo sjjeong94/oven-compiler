@@ -1,0 +1,140 @@
+# MANIFEST.in - Package data inclusion rules# MANIFEST.in - Package data inclusion rules
+
+
+
+# Include essential configuration files# Include essential configuration files
+
+include README.mdinclude README.md
+
+include LICENSEinclude LICENSE
+
+include pyproject.tomlinclude pyproject.toml
+
+include CMakeLists.txtinclude CMakeLists.txt
+
+include Makefileinclude Makefile
+
+
+
+# Include all Python source files# Include all Python source files
+
+recursive-include oven_mlir *.pyrecursive-include oven_mlir *.py
+
+
+
+# Include native modules for all platforms# Include native modules for all platforms
+
+recursive-include oven_mlir *.sorecursive-include oven_mlir *.so
+
+recursive-include oven_mlir *.pydrecursive-include oven_mlir *.pyd
+
+recursive-include oven_mlir *.dllrecursive-include oven_mlir *.dll
+
+recursive-include oven_mlir *.dylibrecursive-include oven_mlir *.dylib
+
+
+
+# Include C++ binding sources# Include C++ binding sources
+
+recursive-include oven_mlir *.cpprecursive-include oven_mlir *.cpp
+
+recursive-include oven_mlir *.hrecursive-include oven_mlir *.h
+
+recursive-include oven_mlir *.hpprecursive-include oven_mlir *.hpp
+
+
+
+# Include CMake files# Include CMake files
+
+recursive-include oven_mlir CMakeLists.txtrecursive-include oven_mlir CMakeLists.txt
+
+recursive-include lib CMakeLists.txtrecursive-include lib CMakeLists.txt
+
+
+
+# Include source files for building# Include source files for building
+
+recursive-include lib *.cpp *.h *.tdrecursive-include lib *.cpp *.h *.td
+
+
+
+# Include scripts# Include scripts
+
+recursive-include scripts *.shrecursive-include scripts *.sh
+
+recursive-include scripts *.pyrecursive-include scripts *.py
+
+
+
+# Include test files# Include test files
+
+recursive-include tests *.mlirrecursive-include tests *.mlir
+
+recursive-include tests/python *.pyrecursive-include tests/python *.py
+
+
+
+# Exclude build artifacts and cache files# Exclude build artifacts and cache files
+
+global-exclude *.pycglobal-exclude *.pyc
+
+global-exclude *.pyoglobal-exclude *.pyo
+
+global-exclude __pycache__global-exclude __pycache__
+
+global-exclude .git*global-exclude .git*
+
+global-exclude .DS_Storeglobal-exclude .DS_Store
+
+global-exclude *.tmpglobal-exclude *.tmp
+
+global-exclude *.tempglobal-exclude *.temp
+
+
+
+# Exclude build directories# Exclude build directories
+
+prune build/prune build/
+
+prune dist/prune dist/
+
+prune *.egg-info/prune *.egg-info/
+
+prune .venv/prune .venv/
+
+prune venv/prune venv/
+
+
+
+# Exclude LLVM project (too large)# Exclude LLVM project (too large)
+
+prune llvm-project/prune llvm-project/
+
+# Include scriptsglobal-exclude .DS_Store
+
+recursive-include scripts *.shrecursive-exclude build *
+
+recursive-include scripts *.pyrecursive-exclude .git *
+
+# Include Makefile
+include Makefile
+
+# Exclude unnecessary files
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.pyd
+global-exclude __pycache__
+global-exclude .git*
+global-exclude .DS_Store
+global-exclude *.tmp
+global-exclude *.temp
+
+# Exclude build directories
+prune build/
+prune dist/
+prune *.egg-info/
+prune .venv/
+prune venv/
+
+# Exclude LLVM project (too large)
+prune llvm-project/
