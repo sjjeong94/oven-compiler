@@ -36,18 +36,29 @@ if [[ ! -f "oven_mlir/oven_opt_py"*".so" ]]; then
         cd "$PROJECT_ROOT"
     fi
     
-    # Build native modules
+    # Build native modules and tools
     cd build
     if [[ -f "build.ninja" ]]; then
-        ninja oven_opt_py
+        ninja oven_opt_py oven-opt
     else
-        make oven_opt_py -j$(nproc)
+        make oven_opt_py oven-opt -j$(nproc)
     fi
     
     # Copy built modules to the correct location
     find . -name "oven_opt_py*.so" -exec cp {} "$PROJECT_ROOT/oven_mlir/" \;
+    
+    # Create tools directory if it doesn't exist and copy oven-opt
+    mkdir -p "$PROJECT_ROOT/tools/build"
+    if [[ -f "tools/oven-opt" ]]; then
+        cp tools/oven-opt "$PROJECT_ROOT/tools/build/"
+        # Create a symlink in project root for easier access
+        ln -sf "tools/build/oven-opt" "$PROJECT_ROOT/oven-opt"
+        echo "✅ oven-opt tool built and copied to tools/build/"
+        echo "✅ oven-opt symlink created in project root"
+    fi
+    
     cd "$PROJECT_ROOT"
-    echo "✅ Native modules built and copied"
+    echo "✅ Native modules and tools built and copied"
 fi
 
 # Install build dependencies if needed
@@ -106,3 +117,7 @@ echo
 echo "🧪 To test GPU functionality:"
 echo "   oven-mlir input.mlir --format ptx --compute-capability sm_80"
 echo "   OVEN_SM_ARCH=sm_75 oven-mlir input.mlir --format ptx"
+echo
+echo "🔧 To use oven-opt tool:"
+echo "   ./oven-opt input.mlir --oven-to-llvm"
+echo "   ./oven-opt tests/reduce_sum_axis1.mlir --oven-to-llvm"
