@@ -42,6 +42,36 @@ except ImportError as e:
 # Import high-level interface
 if _NATIVE_MODULE_AVAILABLE:
     from .oven import OvenCompiler, compile_oven_mlir
+
+    # Import integrated Python to PTX compiler
+    try:
+        from .python_to_ptx import (
+            PythonToPTXCompiler,
+            compile_python_string_to_ptx,
+            compile_python_file_to_ptx,
+        )
+
+        _PYTHON_TO_PTX_AVAILABLE = True
+    except ImportError:
+        _PYTHON_TO_PTX_AVAILABLE = False
+
+        # Create placeholder classes for missing dependencies
+        class PythonToPTXCompiler:
+            def __init__(self, *args, **kwargs):
+                raise ImportError(
+                    "oven-compiler is required for Python to PTX compilation. Install with: pip install oven-compiler"
+                )
+
+        def compile_python_string_to_ptx(*args, **kwargs):
+            raise ImportError(
+                "oven-compiler is required for Python to PTX compilation. Install with: pip install oven-compiler"
+            )
+
+        def compile_python_file_to_ptx(*args, **kwargs):
+            raise ImportError(
+                "oven-compiler is required for Python to PTX compilation. Install with: pip install oven-compiler"
+            )
+
 else:
     # Provide helpful error messages when native module is not available
     class _MissingNativeModule:
@@ -63,10 +93,17 @@ else:
 
 # Export public API
 __all__ = [
+    # Core MLIR compilation
     "OvenOptimizer",
     "OvenCompiler",
     "optimize_string",
     "optimize_file",
     "to_llvm_ir",
+    "to_ptx",
+    "optimize_and_convert",
     "compile_oven_mlir",
+    # Integrated Python to PTX compilation
+    "PythonToPTXCompiler",
+    "compile_python_string_to_ptx",
+    "compile_python_file_to_ptx",
 ]

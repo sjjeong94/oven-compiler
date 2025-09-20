@@ -71,7 +71,7 @@ Repository = "https://github.com/sjjeong94/oven.git"
 "Bug Tracker" = "https://github.com/sjjeong94/oven/issues"
 
 [project.scripts]
-oven-compile = "oven_mlir.cli:main"
+oven-mlir = "oven_mlir.cli:main"
 
 [tool.setuptools]
 packages = ["oven_mlir"]
