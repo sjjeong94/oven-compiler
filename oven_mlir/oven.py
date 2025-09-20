@@ -6,7 +6,14 @@ allowing you to optimize and compile MLIR code directly from Python.
 """
 
 try:
-    from .oven_opt_py import OvenOptimizer, optimize_string, optimize_file, to_llvm_ir
+    from .oven_opt_py import (
+        OvenOptimizer,
+        optimize_string,
+        optimize_file,
+        to_llvm_ir,
+        to_ptx,
+        optimize_and_convert,
+    )
 except ImportError:
     # Fallback if the module is not built yet
     class OvenOptimizer:
@@ -26,6 +33,16 @@ except ImportError:
         )
 
     def to_llvm_ir(code):
+        raise ImportError(
+            "oven_opt_py native module not found. Please build the project first."
+        )
+
+    def to_ptx(code):
+        raise ImportError(
+            "oven_opt_py native module not found. Please build the project first."
+        )
+
+    def optimize_and_convert(code, format):
         raise ImportError(
             "oven_opt_py native module not found. Please build the project first."
         )
@@ -50,15 +67,12 @@ class OvenCompiler:
 
         Args:
             mlir_code (str): MLIR code to compile
-            output_format (str): 'mlir' for optimized MLIR, 'llvm' for LLVM IR
+            output_format (str): 'mlir' for optimized MLIR, 'llvm' for LLVM IR, 'ptx' for PTX assembly
 
         Returns:
             str: Compiled code in the requested format
         """
-        if output_format.lower() == "llvm":
-            return self.optimizer.to_llvm_ir(mlir_code)
-        else:
-            return self.optimizer.optimize_mlir(mlir_code)
+        return self.optimizer.optimize_and_convert(mlir_code, output_format.lower())
 
     def compile_file(self, input_file, output_file=None, output_format="mlir"):
         """
@@ -67,7 +81,7 @@ class OvenCompiler:
         Args:
             input_file (str): Path to input MLIR file
             output_file (str, optional): Path to output file. If None, returns as string
-            output_format (str): 'mlir' for optimized MLIR, 'llvm' for LLVM IR
+            output_format (str): 'mlir' for optimized MLIR, 'llvm' for LLVM IR, 'ptx' for PTX assembly
 
         Returns:
             str or None: If output_file is None, returns compiled code as string
@@ -76,16 +90,17 @@ class OvenCompiler:
         if not input_path.exists():
             raise FileNotFoundError(f"Input file not found: {input_file}")
 
-        if output_format.lower() == "llvm":
-            # Read the file and convert to LLVM IR
-            with open(input_file, "r") as f:
-                mlir_code = f.read()
-            result = self.optimizer.to_llvm_ir(mlir_code)
-        else:
-            result = self.optimizer.optimize_file(input_file)
+        # Read input file
+        with open(input_path, "r") as f:
+            mlir_code = f.read()
+
+        # Compile using the new optimize_and_convert method
+        result = self.optimizer.optimize_and_convert(mlir_code, output_format.lower())
 
         if output_file:
-            with open(output_file, "w") as f:
+            output_path = Path(output_file)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(output_path, "w") as f:
                 f.write(result)
             return None
         else:

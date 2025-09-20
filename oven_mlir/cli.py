@@ -42,14 +42,12 @@ def main():
         # Use the direct optimizer interface for better compatibility
         optimizer = oven_mlir.OvenOptimizer()
 
-        if args.format == "llvm":
-            # Read file and convert to LLVM IR
-            with open(args.input, "r") as f:
-                mlir_code = f.read()
-            result = optimizer.to_llvm_ir(mlir_code)
-        else:
-            # Default to MLIR optimization
-            result = optimizer.optimize_file(args.input)
+        # Read input file
+        with open(args.input, "r") as f:
+            mlir_code = f.read()
+
+        # Use the new optimize_and_convert method that supports all formats
+        result = optimizer.optimize_and_convert(mlir_code, args.format)
 
         # Output result
         if args.output:
