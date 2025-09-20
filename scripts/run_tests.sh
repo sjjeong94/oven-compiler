@@ -6,14 +6,13 @@ set -e
 
 echo "🧪 Running oven-mlir tests..."
 
-# Check if virtual environment exists
-if [ ! -d "venv" ]; then
-    echo "❌ Virtual environment not found. Please run ./scripts/setup_venv.sh first"
-    exit 1
+# Check if virtual environment exists, activate if available
+if [ -d "venv" ]; then
+    echo "📁 Using virtual environment..."
+    source venv/bin/activate
+else
+    echo "📁 Using system Python environment..."
 fi
-
-# Activate virtual environment
-source venv/bin/activate
 
 # Check if pytest is installed
 if ! command -v pytest &> /dev/null; then

@@ -16,19 +16,38 @@ cd "$PROJECT_ROOT"
 # Check if native modules need to be built
 if [[ ! -f "oven_mlir/oven_opt_py"*".so" ]]; then
     echo "⚡ Building native modules first..."
-    if [[ -d "build" ]]; then
+    
+    # Set up build directory with proper CMake configuration
+    if [[ ! -f "build/Makefile" && ! -f "build/build.ninja" ]]; then
+        echo "🔧 Setting up CMake configuration..."
+        rm -rf build
+        mkdir -p build
         cd build
-        make oven_opt_py -j$(nproc)
-        cp oven_mlir/oven_opt_py*.so "$PROJECT_ROOT/oven_mlir/"
+        
+        if [[ -d "../llvm-project/build" ]]; then
+            cmake .. -DCMAKE_BUILD_TYPE=Release \
+                    -DMLIR_DIR="$PWD/../llvm-project/build/lib/cmake/mlir" \
+                    -DLLVM_DIR="$PWD/../llvm-project/build/lib/cmake/llvm"
+        else
+            echo "❌ LLVM/MLIR not found. Please run install_mlir.sh first:"
+            echo "   ./scripts/install_mlir.sh"
+            exit 1
+        fi
         cd "$PROJECT_ROOT"
-        echo "✅ Native modules built"
-    else
-        echo "❌ Build directory not found. Run full cmake configuration first:"
-        echo "   mkdir -p build && cd build"
-        echo "   cmake .. -DCMAKE_BUILD_TYPE=Release -DMLIR_DIR=\$PWD/../llvm-project/build/lib/cmake/mlir"
-        echo "   make oven_opt_py"
-        exit 1
     fi
+    
+    # Build native modules
+    cd build
+    if [[ -f "build.ninja" ]]; then
+        ninja oven_opt_py
+    else
+        make oven_opt_py -j$(nproc)
+    fi
+    
+    # Copy built modules to the correct location
+    find . -name "oven_opt_py*.so" -exec cp {} "$PROJECT_ROOT/oven_mlir/" \;
+    cd "$PROJECT_ROOT"
+    echo "✅ Native modules built and copied"
 fi
 
 # Install build dependencies if needed
