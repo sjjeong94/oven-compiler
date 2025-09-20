@@ -1,0 +1,96 @@
+[build-system]
+requires = [
+    "setuptools>=64",
+    "wheel",
+    "nanobind>=2.0.0",
+    "cmake>=3.20",
+    "ninja"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oven-mlir"
+version = "0.1.0"
+description = "Python bindings for Oven MLIR compiler - GPU kernel optimization and compilation"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Sinjin Jeong", email = "sjjeong94@gmail.com"}
+]
+maintainers = [
+    {name = "Oven MLIR Team", email = "oven-mlir@example.com"}
+]
+keywords = [
+    "mlir",
+    "gpu",
+    "cuda",
+    "compiler",
+    "optimization",
+    "kernel",
+    "llvm"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: C++",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Compilers",
+    "Topic :: System :: Hardware"
+]
+dependencies = [
+    "numpy>=1.20.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov",
+    "black",
+    "isort",
+    "flake8"
+]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+    "myst-parser"
+]
+
+[project.urls]
+Homepage = "https://github.com/sjjeong94/oven"
+Documentation = "https://github.com/sjjeong94/oven#readme"
+Repository = "https://github.com/sjjeong94/oven.git"
+"Bug Tracker" = "https://github.com/sjjeong94/oven/issues"
+
+[project.scripts]
+oven-compile = "oven_mlir.cli:main"
+
+[tool.setuptools]
+packages = ["oven_mlir"]
+
+[tool.setuptools.package-data]
+oven_mlir = ["*.so", "*.dylib", "*.dll"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.pytest.ini_options]
+testpaths = ["tests/python"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = ["-v", "--tb=short", "--ignore=llvm-project"]
+norecursedirs = ["llvm-project", "build", ".git"]

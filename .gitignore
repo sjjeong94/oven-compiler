@@ -1,3 +1,111 @@
+# LLVM/MLIR source (keep in repository but can be large)
 llvm-project
-build-ninja
-compiled
+
+# Build directories
+build/
+build-ninja/
+compiled/
+dist/
+*.egg-info/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.dylib
+*.dll
+*.egg
+*.whl
+
+# Virtual environments
+venv/
+env/
+ENV/
+.env
+.venv
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CPackConfig.cmake
+CPackSourceConfig.cmake
+install_manifest.txt
+compile_commands.json
+build_temp.*
+
+# Compiled binaries
+*.o
+*.obj
+*.lib
+*.a
+*.exe
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.out
+
+# OS specific
+Thumbs.db
+.DS_Store
+*.log
+
+# Documentation builds
+docs/_build/
+docs/build/
+.readthedocs.yml
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Package managers
+pip-log.txt
+pip-delete-this-directory.txt
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
