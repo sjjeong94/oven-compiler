@@ -6,6 +6,7 @@
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Pass/Pass.h"
 #include "mlir/Transforms/GreedyPatternRewriteDriver.h"
+#include "mlir/IR/BuiltinTypes.h"
 
 #include "lib/Dialect/Oven/IR/OvenDialect.h"
 #include "lib/Dialect/Oven/IR/OvenOps.h"
@@ -23,8 +24,21 @@ struct DecomposeExpPattern : public OpRewritePattern<math::ExpOp> {
   LogicalResult matchAndRewrite(math::ExpOp op,
                                 PatternRewriter &rewriter) const override {
     // exp(x) = 2^(x * log2(e)) where log2(e) ~= 1.442695
-    Value constant = rewriter.create<arith::ConstantOp>(
-        op.getLoc(), rewriter.getF32FloatAttr(1.442695));
+    Type resultType = op.getType();
+    Value constant;
+    
+    if (auto vectorType = mlir::dyn_cast<VectorType>(resultType)) {
+      // Create vector constant for vector inputs
+      auto elementType = vectorType.getElementType();
+      auto constantAttr = DenseElementsAttr::get(vectorType, 
+          rewriter.getFloatAttr(elementType, 1.442695));
+      constant = rewriter.create<arith::ConstantOp>(op.getLoc(), constantAttr);
+    } else {
+      // Create scalar constant for scalar inputs
+      constant = rewriter.create<arith::ConstantOp>(
+          op.getLoc(), rewriter.getF32FloatAttr(1.442695));
+    }
+    
     Value mul = rewriter.create<arith::MulFOp>(op.getLoc(), op.getType(),
                                                op.getOperand(), constant);
     Value exp2 = rewriter.create<math::Exp2Op>(op.getLoc(), op.getType(), mul);
@@ -40,10 +54,23 @@ struct DecomposeSigmoidPattern : public OpRewritePattern<oven::SigmoidOp> {
   LogicalResult matchAndRewrite(oven::SigmoidOp op,
                                 PatternRewriter &rewriter) const override {
     // sigmoid(x) = 1 / (1 + exp(-x))
+    Type resultType = op.getType();
     Value negX = rewriter.create<arith::NegFOp>(op.getLoc(), op.getOperand());
     Value expNegX = rewriter.create<math::ExpOp>(op.getLoc(), negX);
-    Value one = rewriter.create<arith::ConstantOp>(
-        op.getLoc(), rewriter.getF32FloatAttr(1.0));
+    
+    Value one;
+    if (auto vectorType = mlir::dyn_cast<VectorType>(resultType)) {
+      // Create vector constant for vector inputs
+      auto elementType = vectorType.getElementType();
+      auto constantAttr = DenseElementsAttr::get(vectorType, 
+          rewriter.getFloatAttr(elementType, 1.0));
+      one = rewriter.create<arith::ConstantOp>(op.getLoc(), constantAttr);
+    } else {
+      // Create scalar constant for scalar inputs
+      one = rewriter.create<arith::ConstantOp>(
+          op.getLoc(), rewriter.getF32FloatAttr(1.0));
+    }
+    
     Value denom = rewriter.create<arith::AddFOp>(op.getLoc(), one, expNegX);
     Value result = rewriter.create<arith::DivFOp>(op.getLoc(), one, denom);
     rewriter.replaceOp(op, result);

@@ -73,6 +73,9 @@ echo "=== Vectorization Tests ==="
 if [ -f "./tests/vectorize.mlir" ]; then
     run_test "./tests/vectorize.mlir"
 fi
+if [ -f "./tests/vectorize_op.mlir" ]; then
+    run_test "./tests/vectorize_op.mlir"
+fi
 
 # Test full compilation pipeline
 echo "=== Full Compilation Pipeline Tests ==="
