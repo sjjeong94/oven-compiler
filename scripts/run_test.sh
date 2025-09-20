@@ -68,6 +68,12 @@ if [ -f "./tests/matmul_block.mlir" ]; then
     run_test "./tests/matmul_block.mlir"
 fi
 
+# Test vectorization
+echo "=== Vectorization Tests ==="
+if [ -f "./tests/vectorize.mlir" ]; then
+    run_test "./tests/vectorize.mlir"
+fi
+
 # Test full compilation pipeline
 echo "=== Full Compilation Pipeline Tests ==="
 echo -n "Testing full compilation pipeline... "

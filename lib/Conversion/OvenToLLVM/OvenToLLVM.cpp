@@ -83,6 +83,44 @@ struct ConvertSmem : public OpConversionPattern<oven::SmemOp> {
   }
 };
 
+struct ConvertVload : public OpConversionPattern<oven::VloadOp> {
+  ConvertVload(mlir::MLIRContext *context)
+      : OpConversionPattern<oven::VloadOp>(context) {}
+
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(oven::VloadOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    LLVM::GEPOp gep = rewriter.create<LLVM::GEPOp>(
+        op.getLoc(), op.getPtr().getType(), rewriter.getF32Type(), op.getPtr(),
+        op.getOffset());
+    LLVM::LoadOp llop = rewriter.create<LLVM::LoadOp>(
+        op.getLoc(), op.getResult().getType(), gep.getResult());
+    rewriter.replaceOp(op, llop);
+    return success();
+  }
+};
+
+struct ConvertVstore : public OpConversionPattern<oven::VstoreOp> {
+  ConvertVstore(mlir::MLIRContext *context)
+      : OpConversionPattern<oven::VstoreOp>(context) {}
+
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(oven::VstoreOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    LLVM::GEPOp gep = rewriter.create<LLVM::GEPOp>(
+        op.getLoc(), op.getPtr().getType(), rewriter.getF32Type(), op.getPtr(),
+        op.getOffset());
+    LLVM::StoreOp llop = rewriter.create<LLVM::StoreOp>(
+        op.getLoc(), op.getValue(), gep.getResult());
+    rewriter.eraseOp(op);
+    return success();
+  }
+};
+
 struct OvenToLLVM : impl::OvenToLLVMBase<OvenToLLVM> {
   using OvenToLLVMBase::OvenToLLVMBase;
 
@@ -99,6 +137,7 @@ struct OvenToLLVM : impl::OvenToLLVMBase<OvenToLLVM> {
 
     RewritePatternSet patterns(context);
     patterns.add<ConvertLoad, ConvertStore, ConvertSmem>(context);
+    patterns.add<ConvertVload, ConvertVstore>(context);
 
     if (failed(applyPartialConversion(module, target, std::move(patterns)))) {
       signalPassFailure();

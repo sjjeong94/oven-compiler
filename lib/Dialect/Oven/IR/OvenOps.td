@@ -6,14 +6,14 @@ include "mlir/IR/OpBase.td"
 include "OvenDialect.td"
 
 class Oven_UnaryOp<string mnemonic> : Op<Oven_Dialect, mnemonic> {
-  let arguments = (ins F32:$lhs);
-  let results = (outs F32:$output);
+  let arguments = (ins AnyType:$lhs);
+  let results = (outs AnyType:$output);
   let assemblyFormat = "$lhs attr-dict `:` type($lhs) `->` type($output)";
 }
 
 class Oven_BinOp<string mnemonic> : Op<Oven_Dialect, mnemonic> {
-  let arguments = (ins F32:$lhs, F32:$rhs);
-  let results = (outs F32:$output);
+  let arguments = (ins AnyType:$lhs, AnyType:$rhs);
+  let results = (outs AnyType:$output);
   let assemblyFormat = "$lhs `,` $rhs attr-dict `:` `(` type($lhs) `,` type($rhs) `)` `->` type($output)";
 }
 
@@ -60,6 +60,20 @@ def Oven_SmemOp : Op<Oven_Dialect, "smem"> {
   let arguments = (ins);
   let results = (outs AnyType:$ptr);
   let assemblyFormat = "attr-dict `:` type($ptr)";
+}
+
+def Oven_VloadOp : Op<Oven_Dialect, "vload"> {
+  let summary = "Vectorized load";
+  let arguments = (ins AnyType:$ptr, I32:$offset, I32Attr:$size);
+  let results = (outs AnyType:$value);
+  let assemblyFormat = "$ptr `,` $offset `,` $size attr-dict `:` `(` type($ptr) `,` type($offset) `)` `->` type($value)";
+}
+
+def Oven_VstoreOp : Op<Oven_Dialect, "vstore"> {
+  let summary = "Vectorized store";
+  let arguments = (ins AnyType:$value, AnyType:$ptr, I32:$offset, I32Attr:$size);
+  let results = (outs);
+  let assemblyFormat = "$value `,` $ptr `,` $offset `,` $size attr-dict `:` `(` type($value) `,` type($ptr) `,` type($offset) `)`";
 }
 
 #endif  // OVENOPS_TD_
