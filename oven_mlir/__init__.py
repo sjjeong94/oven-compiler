@@ -32,6 +32,10 @@ try:
         to_llvm_ir,
         to_ptx,
         optimize_and_convert,
+        check_targets,
+        check_ptx_support,
+        get_compute_capability,
+        set_compute_capability,
     )
 
     _NATIVE_MODULE_AVAILABLE = True
@@ -111,6 +115,10 @@ Current platform: {_platform.platform()}
     to_ptx = _MissingNativeModule("to_ptx")
     optimize_and_convert = _MissingNativeModule("optimize_and_convert")
     compile_oven_mlir = _MissingNativeModule("compile_oven_mlir")
+    check_targets = _MissingNativeModule("check_targets")
+    check_ptx_support = _MissingNativeModule("check_ptx_support")
+    get_compute_capability = _MissingNativeModule("get_compute_capability")
+    set_compute_capability = _MissingNativeModule("set_compute_capability")
 
 # Export public API
 __all__ = [
@@ -123,6 +131,9 @@ __all__ = [
     "to_ptx",
     "optimize_and_convert",
     "compile_oven_mlir",
+    # Target checking
+    "check_targets",
+    "check_ptx_support",
     # Integrated Python to PTX compilation
     "PythonToPTXCompiler",
     "compile_python_string_to_ptx",

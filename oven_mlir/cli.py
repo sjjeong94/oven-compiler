@@ -11,10 +11,30 @@ from pathlib import Path
 from typing import Optional
 
 
-def compile_mlir(input_file: str, output_file: Optional[str], format: str) -> int:
+def compile_mlir(
+    input_file: str,
+    output_file: Optional[str],
+    format: str,
+    compute_capability: Optional[str] = None,
+) -> int:
     """Compile MLIR file (original functionality)."""
     try:
         import oven_mlir
+
+        # Handle compute capability setting
+        if compute_capability:
+            # User explicitly provided compute capability
+            oven_mlir.set_compute_capability(compute_capability)
+            print(f"🎯 Set GPU compute capability to: {compute_capability}")
+        else:
+            # Auto-detect compute capability for PTX format
+            if format == "ptx":
+                detected_cc = oven_mlir.get_compute_capability()
+                print(f"🔍 Auto-detected GPU compute capability: {detected_cc}")
+                if detected_cc == "sm_50":
+                    print(
+                        "💡 Hint: For better performance, specify your GPU's compute capability with --compute-capability"
+                    )
 
         # Use the direct optimizer interface for better compatibility
         optimizer = oven_mlir.OvenOptimizer()
@@ -47,6 +67,7 @@ def compile_python_to_ptx(
     save_intermediate: bool = False,
     intermediate_dir: str = ".",
     verbose: bool = False,
+    compute_capability: Optional[str] = None,
 ) -> int:
     """Compile Python to PTX (new functionality)."""
     try:
@@ -56,6 +77,22 @@ def compile_python_to_ptx(
         except ImportError:
             print("❌ Error: oven-mlir not properly installed", file=sys.stderr)
             return 1
+
+        # Handle compute capability setting
+        if compute_capability:
+            # User explicitly provided compute capability
+            oven_mlir.set_compute_capability(compute_capability)
+            if verbose:
+                print(f"🎯 Set GPU compute capability to: {compute_capability}")
+        else:
+            # Auto-detect compute capability for PTX compilation
+            detected_cc = oven_mlir.get_compute_capability()
+            if verbose:
+                print(f"🔍 Auto-detected GPU compute capability: {detected_cc}")
+                if detected_cc == "sm_50":
+                    print(
+                        "💡 Hint: For better performance, specify your GPU's compute capability with --compute-capability"
+                    )
 
         # Check for Python compilation dependencies
         try:
@@ -187,6 +224,14 @@ Examples:
         help="Output format for MLIR compilation (default: mlir)",
     )
 
+    # GPU options
+    parser.add_argument(
+        "--compute-capability",
+        "--sm",
+        type=str,
+        help="GPU compute capability (e.g., sm_80, sm_75, sm_70). Default: auto-detect or sm_50",
+    )
+
     # Python-specific options
     parser.add_argument(
         "--intermediate",
@@ -219,11 +264,15 @@ Examples:
             save_intermediate=args.intermediate,
             intermediate_dir=args.intermediate_dir,
             verbose=args.verbose,
+            compute_capability=args.compute_capability,
         )
     elif args.input:
         # MLIR compilation mode
         exit_code = compile_mlir(
-            input_file=args.input, output_file=args.output, format=args.format
+            input_file=args.input,
+            output_file=args.output,
+            format=args.format,
+            compute_capability=args.compute_capability,
         )
     else:
         parser.error("Must provide either input MLIR file or --python/--python-string")

@@ -18,6 +18,10 @@
 #include "mlir/Target/LLVMIR/Export.h"
 #include "mlir/Target/LLVMIR/Dialect/All.h"
 #include "llvm/Target/TargetMachine.h"
+
+#include <cstdlib>
+#include <algorithm>
+#include <cctype>
 #include "llvm/Target/TargetOptions.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/MC/TargetRegistry.h"
@@ -47,6 +51,110 @@ void initializeLLVMTargets() {
   }
 }
 
+// Helper function to detect GPU compute capability automatically
+std::string detectGPUComputeCapability() {
+  // Try to detect GPU compute capability
+  // Default to sm_50 for broad compatibility if detection fails
+  std::string defaultSM = "sm_50";
+  
+#ifdef __CUDA_ARCH__
+  // If compiled with CUDA, use the compile-time architecture
+  int major = __CUDA_ARCH__ / 100;
+  int minor = (__CUDA_ARCH__ % 100) / 10;
+  return "sm_" + std::to_string(major) + std::to_string(minor);
+#else
+  // Try to detect runtime GPU capabilities
+  try {
+    // First check environment variable override
+    const char* smArch = std::getenv("OVEN_SM_ARCH");
+    if (smArch) {
+      std::string arch(smArch);
+      // Validate the architecture string
+      if (arch.length() >= 4 && arch.substr(0, 3) == "sm_") {
+        return arch;
+      }
+    }
+    
+    // Try to detect actual GPU using nvidia-smi
+    std::string nvidiaSmiCmd = "nvidia-smi --query-gpu=compute_cap --format=csv,noheader,nounits 2>/dev/null";
+    FILE* pipe = popen(nvidiaSmiCmd.c_str(), "r");
+    if (pipe) {
+      char buffer[128];
+      std::string result = "";
+      while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+        result += buffer;
+      }
+      int returnCode = pclose(pipe);
+      
+      if (returnCode == 0 && !result.empty()) {
+        // Parse compute capability (e.g., "8.6" -> "sm_86")
+        std::string cc = result;
+        // Remove whitespace
+        cc.erase(std::remove_if(cc.begin(), cc.end(), ::isspace), cc.end());
+        
+        // Find the dot and extract major.minor
+        size_t dotPos = cc.find('.');
+        if (dotPos != std::string::npos && dotPos > 0 && dotPos < cc.length() - 1) {
+          std::string major = cc.substr(0, dotPos);
+          std::string minor = cc.substr(dotPos + 1, 1); // Take only first digit after dot
+          return "sm_" + major + minor;
+        }
+      }
+    }
+    
+    // Fallback: Check for modern GPU preference
+    const char* preferModern = std::getenv("OVEN_MODERN_GPU");
+    if (preferModern && std::string(preferModern) == "1") {
+      return "sm_80";
+    }
+  } catch (...) {
+    // Ignore any detection errors
+  }
+#endif
+  
+  return defaultSM;
+}
+
+// Helper function to check available targets in the environment
+std::string checkAvailableTargets() {
+  initializeLLVMTargets();
+  
+  std::string result = "Available targets in this environment:\n";
+  
+  for (llvm::TargetRegistry::iterator it = llvm::TargetRegistry::targets().begin(),
+       ie = llvm::TargetRegistry::targets().end(); it != ie; ++it) {
+    result += "  - " + std::string(it->getName()) + ": " + std::string(it->getShortDescription()) + "\n";
+  }
+  
+  // Check specifically for NVPTX targets
+  std::string error;
+  const llvm::Target* nvptx32 = llvm::TargetRegistry::lookupTarget("nvptx-nvidia-cuda", error);
+  const llvm::Target* nvptx64 = llvm::TargetRegistry::lookupTarget("nvptx64-nvidia-cuda", error);
+  
+  result += "\nNVPTX Target Support:\n";
+  result += std::string("  - nvptx-nvidia-cuda (32-bit): ") + (nvptx32 ? "✓ Available" : "✗ Not available") + "\n";
+  result += std::string("  - nvptx64-nvidia-cuda (64-bit): ") + (nvptx64 ? "✓ Available" : "✗ Not available") + "\n";
+  
+  // Check target machine creation capability
+  if (nvptx64) {
+    llvm::TargetOptions opt;
+    auto relocationModel = llvm::Reloc::PIC_;
+    std::string computeCapability = detectGPUComputeCapability();
+    std::unique_ptr<llvm::TargetMachine> targetMachine(
+      nvptx64->createTargetMachine("nvptx64-nvidia-cuda", computeCapability, "", opt, relocationModel));
+    
+    result += std::string("  - TargetMachine creation: ") + (targetMachine ? "✓ Success" : "✗ Failed") + "\n";
+    result += "  - Detected compute capability: " + computeCapability + "\n";
+    
+    if (targetMachine) {
+      result += "  - Data layout: " + targetMachine->createDataLayout().getStringRepresentation() + "\n";
+      result += "  - Target triple: " + targetMachine->getTargetTriple().str() + "\n";
+    }
+  }
+  
+  return result;
+}
+
 // Helper function to compile LLVM IR to PTX
 std::string compileToPTX(llvm::Module* llvmModule) {
   initializeLLVMTargets();
@@ -56,16 +164,28 @@ std::string compileToPTX(llvm::Module* llvmModule) {
   
   const llvm::Target* target = llvm::TargetRegistry::lookupTarget(targetTriple, error);
   if (!target) {
-    return "Error: Failed to lookup target for PTX: " + error;
+    std::string errorMsg = "Error: Failed to lookup target for PTX: " + error + "\n\n";
+    errorMsg += "This might be because NVPTX support is not compiled into this LLVM build.\n";
+    errorMsg += "You can check available targets with the check_targets() function.\n\n";
+    errorMsg += checkAvailableTargets();
+    return errorMsg;
   }
   
   llvm::TargetOptions opt;
   auto relocationModel = llvm::Reloc::PIC_;
+  std::string computeCapability = detectGPUComputeCapability();
   std::unique_ptr<llvm::TargetMachine> targetMachine(
-    target->createTargetMachine(targetTriple, "sm_50", "", opt, relocationModel));
+    target->createTargetMachine(targetTriple, computeCapability, "", opt, relocationModel));
   
   if (!targetMachine) {
-    return "Error: Failed to create target machine for PTX";
+    std::string errorMsg = "Error: Failed to create target machine for PTX\n";
+    errorMsg += "Target found but TargetMachine creation failed.\n";
+    errorMsg += "This could be due to incompatible target options or missing target components.\n\n";
+    errorMsg += "Target info:\n";
+    errorMsg += "  - Name: " + std::string(target->getName()) + "\n";
+    errorMsg += "  - Description: " + std::string(target->getShortDescription()) + "\n";
+    errorMsg += "  - Attempted compute capability: " + computeCapability + "\n";
+    return errorMsg;
   }
   
   llvmModule->setDataLayout(targetMachine->createDataLayout());
@@ -76,7 +196,7 @@ std::string compileToPTX(llvm::Module* llvmModule) {
   
   llvm::legacy::PassManager pass;
   if (targetMachine->addPassesToEmitFile(pass, dest, nullptr, llvm::CodeGenFileType::AssemblyFile)) {
-    return "Error: Target machine can't emit PTX";
+    return "Error: Target machine can't emit PTX assembly. The target may not support code generation.";
   }
   
   pass.run(*llvmModule);
@@ -282,4 +402,44 @@ NB_MODULE(oven_opt_py, m) {
         OvenOptimizer opt;
         return opt.optimize_and_convert(code, format);
     }, "Optimize MLIR and convert to specified format", nb::arg("code"), nb::arg("format"));
+    
+    // Target checking functions
+    m.def("check_targets", []() {
+        return checkAvailableTargets();
+    }, "Check available LLVM targets in this environment");
+    
+    m.def("check_ptx_support", []() -> std::string {
+        initializeLLVMTargets();
+        std::string error;
+        const llvm::Target* target = llvm::TargetRegistry::lookupTarget("nvptx64-nvidia-cuda", error);
+        
+        if (!target) {
+            return std::string("PTX support: ✗ Not available - ") + error;
+        }
+        
+        llvm::TargetOptions opt;
+        auto relocationModel = llvm::Reloc::PIC_;
+        std::string computeCapability = detectGPUComputeCapability();
+        std::unique_ptr<llvm::TargetMachine> targetMachine(
+            target->createTargetMachine("nvptx64-nvidia-cuda", computeCapability, "", opt, relocationModel));
+        
+        if (!targetMachine) {
+            return std::string("PTX support: ✗ Target found but TargetMachine creation failed (") + computeCapability + ")";
+        }
+        
+        return std::string("PTX support: ✓ Fully available (") + computeCapability + ")";
+    }, "Check if PTX compilation is supported in this environment");
+    
+    m.def("get_compute_capability", []() -> std::string {
+        return detectGPUComputeCapability();
+    }, "Get the detected or configured GPU compute capability");
+    
+    m.def("set_compute_capability", [](const std::string& arch) -> std::string {
+        // Set environment variable for current session
+        if (setenv("OVEN_SM_ARCH", arch.c_str(), 1) == 0) {
+            return "Compute capability set to: " + arch;
+        } else {
+            return "Failed to set compute capability";
+        }
+    }, "Set GPU compute capability (e.g., 'sm_80')", nb::arg("arch"));
 }
