@@ -38,14 +38,43 @@ if [[ ! -f "oven_mlir/oven_opt_py"*".so" ]]; then
     
     # Build native modules and tools
     cd build
+    
+    # Check what targets are available
+    echo "🔍 Checking available build targets..."
     if [[ -f "build.ninja" ]]; then
-        ninja oven_opt_py oven-opt
+        AVAILABLE_TARGETS=$(ninja -t targets | grep -E "(oven|py)" | cut -d: -f1 || true)
+        BUILD_CMD="ninja"
     else
-        make oven_opt_py oven-opt -j$(nproc)
+        AVAILABLE_TARGETS=$(make help 2>/dev/null | grep -E "^\.\.\. " | grep -E "(oven|py)" | sed 's/\.\.\. //' || true)
+        BUILD_CMD="make"
     fi
     
-    # Copy built modules to the correct location
-    find . -name "oven_opt_py*.so" -exec cp {} "$PROJECT_ROOT/oven_mlir/" \;
+    echo "📋 Available targets: $AVAILABLE_TARGETS"
+    
+    # Build oven-opt (always available)
+    echo "🔨 Building oven-opt..."
+    if [[ -f "build.ninja" ]]; then
+        ninja oven-opt
+    else
+        make oven-opt -j$(nproc)
+    fi
+    
+    # Try to build Python bindings if target exists
+    if echo "$AVAILABLE_TARGETS" | grep -q "oven_opt_py"; then
+        echo "🐍 Building Python bindings..."
+        if [[ -f "build.ninja" ]]; then
+            ninja oven_opt_py
+        else
+            make oven_opt_py -j$(nproc)
+        fi
+        
+        # Copy built modules to the correct location
+        find . -name "oven_opt_py*.so" -exec cp {} "$PROJECT_ROOT/oven_mlir/" \;
+        echo "✅ Python bindings built and copied"
+    else
+        echo "⚠️ Python bindings target not available (nanobind may not be found)"
+        echo "   Continuing with oven-opt tool only..."
+    fi
     
     # Create tools directory if it doesn't exist and copy oven-opt
     mkdir -p "$PROJECT_ROOT/tools/build"
@@ -58,7 +87,7 @@ if [[ ! -f "oven_mlir/oven_opt_py"*".so" ]]; then
     fi
     
     cd "$PROJECT_ROOT"
-    echo "✅ Native modules and tools built and copied"
+    echo "✅ Native modules and tools built successfully"
 fi
 
 # Install build dependencies if needed

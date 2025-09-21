@@ -51,7 +51,7 @@ class PythonToPTXCompiler:
         return {
             "python_compiler": {
                 "name": "oven-compiler",
-                "version": "0.1.0",
+                "version": "0.1.1",
                 "capabilities": ["Python", "AST", "MLIR"],
             },
             "mlir_compiler": {
