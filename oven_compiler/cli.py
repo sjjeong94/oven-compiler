@@ -19,17 +19,17 @@ def compile_mlir(
 ) -> int:
     """Compile MLIR file (original functionality)."""
     try:
-        import oven_mlir
+        import oven_compiler
 
         # Handle compute capability setting
         if compute_capability:
             # User explicitly provided compute capability
-            oven_mlir.set_compute_capability(compute_capability)
+            oven_compiler.set_compute_capability(compute_capability)
             print(f"🎯 Set GPU compute capability to: {compute_capability}")
         else:
             # Auto-detect compute capability for PTX format
             if format == "ptx":
-                detected_cc = oven_mlir.get_compute_capability()
+                detected_cc = oven_compiler.get_compute_capability()
                 print(f"🔍 Auto-detected GPU compute capability: {detected_cc}")
                 if detected_cc == "sm_50":
                     print(
@@ -37,7 +37,7 @@ def compile_mlir(
                     )
 
         # Use the direct optimizer interface for better compatibility
-        optimizer = oven_mlir.OvenOptimizer()
+        optimizer = oven_compiler.OvenOptimizer()
 
         # Read input file
         with open(input_file, "r") as f:
@@ -73,20 +73,20 @@ def compile_python_to_ptx(
     try:
         # Import here to provide better error messages
         try:
-            import oven_mlir
+            import oven_compiler
         except ImportError:
-            print("❌ Error: oven-mlir not properly installed", file=sys.stderr)
+            print("❌ Error: oven-compiler not properly installed", file=sys.stderr)
             return 1
 
         # Handle compute capability setting
         if compute_capability:
             # User explicitly provided compute capability
-            oven_mlir.set_compute_capability(compute_capability)
+            oven_compiler.set_compute_capability(compute_capability)
             if verbose:
                 print(f"🎯 Set GPU compute capability to: {compute_capability}")
         else:
             # Auto-detect compute capability for PTX compilation
-            detected_cc = oven_mlir.get_compute_capability()
+            detected_cc = oven_compiler.get_compute_capability()
             if verbose:
                 print(f"🔍 Auto-detected GPU compute capability: {detected_cc}")
                 if detected_cc == "sm_50":
@@ -96,7 +96,7 @@ def compile_python_to_ptx(
 
         # Check for Python compilation dependencies
         try:
-            compiler = oven_mlir.PythonToPTXCompiler()
+            compiler = oven_compiler.PythonToPTXCompiler()
         except Exception as e:
             print(f"❌ Error: Python compilation not available: {e}", file=sys.stderr)
             print(
@@ -174,25 +174,25 @@ def compile_python_to_ptx(
 def main():
     """Main CLI entry point with support for both MLIR and Python compilation."""
     parser = argparse.ArgumentParser(
-        prog="oven-mlir",
+        prog="oven-compiler",
         description="Oven MLIR Compiler - Optimize MLIR and compile Python to PTX",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # MLIR compilation (original functionality)
-  oven-mlir input.mlir --format ptx -o output.ptx
+  oven-compiler input.mlir --format ptx -o output.ptx
   
   # Python to PTX compilation
-  oven-mlir --python my_kernel.py -o kernel.ptx
+  oven-compiler --python my_kernel.py -o kernel.ptx
   
   # Python string to PTX
-  oven-mlir --python-string "def add(a,b): return a+b" -o add.ptx
+  oven-compiler --python-string "def add(a,b): return a+b" -o add.ptx
   
   # Save intermediate files for debugging
-  oven-mlir --python kernel.py --intermediate --intermediate-dir ./debug
+  oven-compiler --python kernel.py --intermediate --intermediate-dir ./debug
   
   # Verbose mode
-  oven-mlir --python kernel.py --verbose
+  oven-compiler --python kernel.py --verbose
         """,
     )
 
@@ -249,7 +249,13 @@ Examples:
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="Enable verbose output"
     )
-    parser.add_argument("--version", action="version", version="oven-mlir 1.0.0")
+
+    # Get version from module
+    from . import __version__
+
+    parser.add_argument(
+        "--version", action="version", version=f"oven-compiler {__version__}"
+    )
 
     # Parse arguments
     args = parser.parse_args()

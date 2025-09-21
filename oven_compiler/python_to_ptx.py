@@ -2,7 +2,7 @@
 Integrated Python to PTX Compiler
 
 This module provides a complete pipeline for compiling Python code to PTX assembly
-through MLIR using oven-compiler (Python → MLIR) and oven-mlir (MLIR → PTX).
+through MLIR using oven-compiler (Python → MLIR) and oven-compiler (MLIR → PTX).
 """
 
 from typing import Optional, Dict, Any
@@ -20,20 +20,20 @@ except ImportError:
 try:
     from .oven import OvenCompiler
 
-    _OVEN_MLIR_AVAILABLE = True
+    _OVEN_COMPILER_AVAILABLE = True
 except ImportError:
     try:
-        from oven_mlir.oven import OvenCompiler
+        from oven_compiler.oven import OvenCompiler
 
-        _OVEN_MLIR_AVAILABLE = True
+        _OVEN_COMPILER_AVAILABLE = True
     except ImportError:
-        _OVEN_MLIR_AVAILABLE = False
+        _OVEN_COMPILER_AVAILABLE = False
 
 
 class PythonToPTXCompiler:
     """
     Integrated compiler that combines oven-compiler (Python → MLIR)
-    with oven-mlir (MLIR → PTX) for complete Python to PTX compilation.
+    with oven-compiler (MLIR → PTX) for complete Python to PTX compilation.
     """
 
     def __init__(self):
@@ -48,14 +48,16 @@ class PythonToPTXCompiler:
 
     def get_compiler_info(self) -> dict:
         """Get information about both compilers."""
+        from . import __version__
+
         return {
             "python_compiler": {
                 "name": "oven-compiler",
-                "version": "0.1.1",
+                "version": __version__,
                 "capabilities": ["Python", "AST", "MLIR"],
             },
             "mlir_compiler": {
-                "name": "oven-mlir",
+                "name": "oven-compiler",
                 "capabilities": ["MLIR", "LLVM IR", "PTX"],
             },
             "pipeline": "Python → MLIR → LLVM IR → PTX Assembly",

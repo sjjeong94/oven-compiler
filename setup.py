@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Setup script for oven-mlir package with native module support.
+Setup script for oven-compiler package with native module support.
 
 This script ensures that wheels are built with the correct platform tags
 when native modules are included.
@@ -32,10 +32,10 @@ class CustomBuildPy(build_py):
 
         # Copy native modules to build directory
         native_modules = (
-            glob.glob("oven_mlir/*.so")
-            + glob.glob("oven_mlir/*.pyd")
-            + glob.glob("oven_mlir/*.dll")
-            + glob.glob("oven_mlir/*.dylib")
+            glob.glob("oven_compiler/*.so")
+            + glob.glob("oven_compiler/*.pyd")
+            + glob.glob("oven_compiler/*.dll")
+            + glob.glob("oven_compiler/*.dylib")
         )
 
         if native_modules:
@@ -43,7 +43,7 @@ class CustomBuildPy(build_py):
 
             # Ensure build directory exists
             build_lib = self.build_lib
-            target_dir = os.path.join(build_lib, "oven_mlir")
+            target_dir = os.path.join(build_lib, "oven_compiler")
             os.makedirs(target_dir, exist_ok=True)
 
             # Copy native modules
@@ -64,10 +64,10 @@ class CustomBdistWheel(bdist_wheel if bdist_wheel else object):
         has_native = any(
             glob.glob(pattern)
             for pattern in [
-                "oven_mlir/*.so",
-                "oven_mlir/*.pyd",
-                "oven_mlir/*.dll",
-                "oven_mlir/*.dylib",
+                "oven_compiler/*.so",
+                "oven_compiler/*.pyd",
+                "oven_compiler/*.dll",
+                "oven_compiler/*.dylib",
             ]
         )
 
@@ -89,10 +89,10 @@ class CustomBdistWheel(bdist_wheel if bdist_wheel else object):
         has_native = any(
             glob.glob(pattern)
             for pattern in [
-                "oven_mlir/*.so",
-                "oven_mlir/*.pyd",
-                "oven_mlir/*.dll",
-                "oven_mlir/*.dylib",
+                "oven_compiler/*.so",
+                "oven_compiler/*.pyd",
+                "oven_compiler/*.dll",
+                "oven_compiler/*.dylib",
             ]
         )
 
@@ -131,10 +131,10 @@ class CustomBdistWheel(bdist_wheel if bdist_wheel else object):
 def has_native_modules():
     """Check if native modules are present."""
     patterns = [
-        "oven_mlir/*.so",
-        "oven_mlir/*.pyd",
-        "oven_mlir/*.dll",
-        "oven_mlir/*.dylib",
+        "oven_compiler/*.so",
+        "oven_compiler/*.pyd",
+        "oven_compiler/*.dll",
+        "oven_compiler/*.dylib",
     ]
 
     for pattern in patterns:
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     if native_present:
         native_files = []
         for pattern in ["*.so", "*.pyd", "*.dll", "*.dylib"]:
-            native_files.extend(glob.glob(f"oven_mlir/{pattern}"))
+            native_files.extend(glob.glob(f"oven_compiler/{pattern}"))
         print(f"Native files: {native_files}")
 
     # Prepare cmdclass

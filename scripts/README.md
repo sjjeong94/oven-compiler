@@ -1,6 +1,6 @@
-# oven-mlir Scripts
+# oven-compiler Scripts
 
-This directory contains 3 core scripts essential for oven-mlir development.
+This directory contains 3 core scripts essential for oven-compiler development.
 
 ## 📁 Scripts Overview
 

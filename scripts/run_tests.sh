@@ -1,10 +1,10 @@
 #!/bin/bash
-# Run tests for oven-mlir package
+# Run tests for oven-compiler package
 # Usage: ./scripts/run_tests.sh [options]
 
 set -e
 
-echo "🧪 Running oven-mlir tests..."
+echo "🧪 Running oven-compiler tests..."
 
 # Check if virtual environment exists, activate if available
 if [ -d "venv" ]; then
@@ -31,7 +31,7 @@ while [[ $# -gt 0 ]]; do
         --coverage)
             echo "📊 Running tests with coverage..."
             pip install pytest-cov
-            PYTEST_ARGS="$PYTEST_ARGS --cov=oven_mlir --cov-report=html --cov-report=term"
+            PYTEST_ARGS="$PYTEST_ARGS --cov=oven_compiler --cov-report=html --cov-report=term"
             shift
             ;;
         --verbose)

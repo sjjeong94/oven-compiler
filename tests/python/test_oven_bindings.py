@@ -10,17 +10,17 @@ from pathlib import Path
 
 def test_import_oven():
     """Test that we can import the oven package"""
-    import oven_mlir
+    import oven_compiler
 
-    assert hasattr(oven_mlir, "__version__")
+    assert hasattr(oven_compiler, "__version__")
 
 
 def test_oven_optimizer_creation():
     """Test creating an OvenOptimizer instance"""
-    import oven_mlir
+    import oven_compiler
 
     try:
-        optimizer = oven_mlir.OvenOptimizer()
+        optimizer = oven_compiler.OvenOptimizer()
         assert optimizer is not None
     except ImportError:
         pytest.skip("Native module not available")
@@ -28,10 +28,10 @@ def test_oven_optimizer_creation():
 
 def test_basic_mlir_optimization():
     """Test basic MLIR optimization"""
-    import oven_mlir
+    import oven_compiler
 
     try:
-        optimizer = oven_mlir.OvenOptimizer()
+        optimizer = oven_compiler.OvenOptimizer()
     except ImportError:
         pytest.skip("Native module not available")
 
@@ -49,10 +49,10 @@ def test_basic_mlir_optimization():
 
 def test_file_optimization():
     """Test file-based optimization"""
-    import oven_mlir
+    import oven_compiler
 
     try:
-        optimizer = oven_mlir.OvenOptimizer()
+        optimizer = oven_compiler.OvenOptimizer()
     except ImportError:
         pytest.skip("Native module not available")
 
@@ -75,19 +75,19 @@ def test_file_optimization():
 
 def test_convenience_functions():
     """Test convenience functions"""
-    import oven_mlir
+    import oven_compiler
 
     try:
         # Test the convenience functions exist
-        assert hasattr(oven_mlir, "optimize_string")
-        assert hasattr(oven_mlir, "optimize_file")
+        assert hasattr(oven_compiler, "optimize_string")
+        assert hasattr(oven_compiler, "optimize_file")
 
         # Try to use them
         mlir_code = """func.func @simple(%arg0: f32) -> f32 {
   return %arg0 : f32
 }"""
 
-        result = oven_mlir.optimize_string(mlir_code)
+        result = oven_compiler.optimize_string(mlir_code)
         assert isinstance(result, str)
 
     except ImportError:
@@ -96,10 +96,10 @@ def test_convenience_functions():
 
 def test_oven_compiler():
     """Test the high-level OvenCompiler interface"""
-    import oven_mlir
+    import oven_compiler
 
     try:
-        compiler = oven_mlir.OvenCompiler()
+        compiler = oven_compiler.OvenCompiler()
         assert compiler is not None
 
         mlir_code = """func.func @test(%arg0: f32) -> f32 {
@@ -119,9 +119,9 @@ def test_oven_compiler():
 
 def test_cli_import():
     """Test that CLI module can be imported"""
-    import oven_mlir.cli
+    import oven_compiler.cli
 
-    assert hasattr(oven_mlir.cli, "main")
+    assert hasattr(oven_compiler.cli, "main")
 
 
 @pytest.mark.parametrize(
@@ -129,13 +129,13 @@ def test_cli_import():
 )
 def test_specific_oven_files(test_file):
     """Test optimization of specific Oven MLIR files"""
-    import oven_mlir
+    import oven_compiler
 
     if not os.path.exists(test_file):
         pytest.skip(f"Test file {test_file} not found")
 
     try:
-        optimizer = oven_mlir.OvenOptimizer()
+        optimizer = oven_compiler.OvenOptimizer()
         result = optimizer.optimize_file(test_file)
 
         assert isinstance(result, str)
@@ -154,10 +154,10 @@ def test_specific_oven_files(test_file):
 
 def test_error_handling():
     """Test error handling for invalid MLIR"""
-    import oven_mlir
+    import oven_compiler
 
     try:
-        optimizer = oven_mlir.OvenOptimizer()
+        optimizer = oven_compiler.OvenOptimizer()
     except ImportError:
         pytest.skip("Native module not available")
 

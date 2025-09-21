@@ -8,12 +8,15 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 include-package-data = true
 
+[tool.setuptools.dynamic]
+version = {attr = "oven_compiler.__version__"}
+
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["oven_mlir*"]
+include = ["oven_compiler*"]
 
 [tool.setuptools.package-data]
-oven_mlir = [
+oven_compiler = [
     "*.so",
     "*.pyd", 
     "*.dll",
@@ -21,17 +24,14 @@ oven_mlir = [
 ]
 
 [project]
-name = "oven-mlir"
-version = "0.1.1"
+name = "oven-compiler"
+dynamic = ["version"]
 description = "Python-to-PTX GPU Kernel Compiler with MLIR optimization"
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
 authors = [
     {name = "Sinjin Jeong", email = "sjjeong94@gmail.com"}
-]
-maintainers = [
-    {name = "Oven MLIR Team", email = "oven-mlir@example.com"}
 ]
 keywords = [
     "mlir",
@@ -68,12 +68,12 @@ classifiers = [
 ]
 dependencies = [
     "numpy>=1.20.0",
-    "oven-compiler>=0.1.1"
+    "oven-language>=0.1.3"
 ]
 
 [project.optional-dependencies]
 python-compilation = [
-    # oven-compiler is now a core dependency
+    # oven-language is now a core dependency
 ]
 dev = [
     "pytest>=6.0",
@@ -101,15 +101,15 @@ build = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/sjjeong94/oven"
-Documentation = "https://github.com/sjjeong94/oven#readme"
-Repository = "https://github.com/sjjeong94/oven.git"
-"Bug Tracker" = "https://github.com/sjjeong94/oven/issues"
-"Source Code" = "https://github.com/sjjeong94/oven"
-"Download" = "https://pypi.org/project/oven-mlir/"
+Homepage = "https://github.com/sjjeong94/oven-compiler"
+Documentation = "https://github.com/sjjeong94/oven-compiler#readme"
+Repository = "https://github.com/sjjeong94/oven-compiler.git"
+"Bug Tracker" = "https://github.com/sjjeong94/oven-compiler/issues"
+"Source Code" = "https://github.com/sjjeong94/oven-compiler"
+"Download" = "https://pypi.org/project/oven-compiler/"
 
 [project.scripts]
-oven-mlir = "oven_mlir.cli:main"
+oven-compiler = "oven_compiler.cli:main"
 
 [tool.black]
 line-length = 88

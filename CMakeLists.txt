@@ -52,7 +52,7 @@ add_subdirectory(tools)
 # Only add Python bindings if nanobind is available
 if(NANOBIND_FOUND)
     message(STATUS "Adding Python bindings")
-    add_subdirectory(oven_mlir)
+    add_subdirectory(oven_compiler)
 else()
     message(STATUS "Skipping Python bindings (nanobind not found)")
 endif()

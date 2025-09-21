@@ -20,7 +20,7 @@ Example usage:
     result = optimizer.optimize_mlir(mlir_code)
 """
 
-__version__ = "0.1.1"
+__version__ = "0.1.3"
 __author__ = "Oven MLIR Team"
 
 # Import the native module
@@ -63,17 +63,17 @@ if _NATIVE_MODULE_AVAILABLE:
         class PythonToPTXCompiler:
             def __init__(self, *args, **kwargs):
                 raise ImportError(
-                    "oven-compiler dependency issue. Try reinstalling: pip install --force-reinstall oven-mlir"
+                    "oven-compiler dependency issue. Try reinstalling: pip install --force-reinstall oven-compiler"
                 )
 
         def compile_python_string_to_ptx(*args, **kwargs):
             raise ImportError(
-                "oven-compiler dependency issue. Try reinstalling: pip install --force-reinstall oven-mlir"
+                "oven-compiler dependency issue. Try reinstalling: pip install --force-reinstall oven-compiler"
             )
 
         def compile_python_file_to_ptx(*args, **kwargs):
             raise ImportError(
-                "oven-compiler dependency issue. Try reinstalling: pip install --force-reinstall oven-mlir"
+                "oven-compiler dependency issue. Try reinstalling: pip install --force-reinstall oven-compiler"
             )
 
 else:
@@ -89,7 +89,7 @@ This usually happens when:
 3. The package was built for a different Python version
 
 Solutions:
-1. Install platform-specific wheel: pip install --force-reinstall --no-deps oven-mlir
+1. Install platform-specific wheel: pip install --force-reinstall --no-deps oven-compiler
 2. For Python-to-PTX only: pip install oven-compiler
 3. Build from source with MLIR support
 
