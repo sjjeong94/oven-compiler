@@ -4,6 +4,7 @@
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/Func/Transforms/FuncConversions.h"
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
+#include "mlir/Dialect/Math/IR/Math.h"
 #include "mlir/Dialect/SCF/IR/SCF.h"
 #include "mlir/IR/ImplicitLocOpBuilder.h"
 #include "mlir/Transforms/DialectConversion.h"
@@ -121,6 +122,162 @@ struct ConvertVstore : public OpConversionPattern<oven::VstoreOp> {
   }
 };
 
+struct ConvertMathCos : public OpConversionPattern<math::CosOp> {
+  ConvertMathCos(mlir::MLIRContext *context)
+      : OpConversionPattern<math::CosOp>(context) {}
+
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(math::CosOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    auto moduleOp = op->getParentOfType<mlir::ModuleOp>();
+    
+    // Check if __nv_cosf function is already declared
+    auto cosfFunc = moduleOp.lookupSymbol<LLVM::LLVMFuncOp>("__nv_cosf");
+    if (!cosfFunc) {
+      // Create function declaration for __nv_cosf
+      OpBuilder builder(moduleOp.getBody(), moduleOp.getBody()->begin());
+      auto f32Type = rewriter.getF32Type();
+      auto funcType = LLVM::LLVMFunctionType::get(f32Type, {f32Type});
+      cosfFunc = builder.create<LLVM::LLVMFuncOp>(
+          moduleOp.getLoc(), "__nv_cosf", funcType);
+    }
+    
+    // Create function call
+    auto callOp = rewriter.create<LLVM::CallOp>(
+        op.getLoc(), cosfFunc, op.getOperand());
+    
+    rewriter.replaceOp(op, callOp.getResult());
+    return success();
+  }
+};
+
+struct ConvertMathSin : public OpConversionPattern<math::SinOp> {
+  ConvertMathSin(mlir::MLIRContext *context)
+      : OpConversionPattern<math::SinOp>(context) {}
+
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(math::SinOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    auto moduleOp = op->getParentOfType<mlir::ModuleOp>();
+    
+    // Check if __nv_sinf function is already declared
+    auto sinfFunc = moduleOp.lookupSymbol<LLVM::LLVMFuncOp>("__nv_sinf");
+    if (!sinfFunc) {
+      // Create function declaration for __nv_sinf
+      OpBuilder builder(moduleOp.getBody(), moduleOp.getBody()->begin());
+      auto f32Type = rewriter.getF32Type();
+      auto funcType = LLVM::LLVMFunctionType::get(f32Type, {f32Type});
+      sinfFunc = builder.create<LLVM::LLVMFuncOp>(
+          moduleOp.getLoc(), "__nv_sinf", funcType);
+    }
+    
+    // Create function call
+    auto callOp = rewriter.create<LLVM::CallOp>(
+        op.getLoc(), sinfFunc, op.getOperand());
+    
+    rewriter.replaceOp(op, callOp.getResult());
+    return success();
+  }
+};
+
+
+struct ConvertMathTan : public OpConversionPattern<math::TanOp> {
+  ConvertMathTan(mlir::MLIRContext *context)
+      : OpConversionPattern<math::TanOp>(context) {}
+
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(math::TanOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    auto moduleOp = op->getParentOfType<mlir::ModuleOp>();
+    
+    // Check if __nv_tanf function is already declared
+    auto tanfFunc = moduleOp.lookupSymbol<LLVM::LLVMFuncOp>("__nv_tanf");
+    if (!tanfFunc) {
+      // Create function declaration for __nv_tanf
+      OpBuilder builder(moduleOp.getBody(), moduleOp.getBody()->begin());
+      auto f32Type = rewriter.getF32Type();
+      auto funcType = LLVM::LLVMFunctionType::get(f32Type, {f32Type});
+      tanfFunc = builder.create<LLVM::LLVMFuncOp>(
+          moduleOp.getLoc(), "__nv_tanf", funcType);
+    }
+    
+    // Create function call
+    auto callOp = rewriter.create<LLVM::CallOp>(
+        op.getLoc(), tanfFunc, op.getOperand());
+    
+    rewriter.replaceOp(op, callOp.getResult());
+    return success();
+  }
+};
+
+struct ConvertMathLog : public OpConversionPattern<math::LogOp> {
+  ConvertMathLog(mlir::MLIRContext *context)
+      : OpConversionPattern<math::LogOp>(context) {}
+
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(math::LogOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    auto moduleOp = op->getParentOfType<mlir::ModuleOp>();
+    
+    // Check if __nv_logf function is already declared
+    auto logfFunc = moduleOp.lookupSymbol<LLVM::LLVMFuncOp>("__nv_logf");
+    if (!logfFunc) {
+      // Create function declaration for __nv_logf
+      OpBuilder builder(moduleOp.getBody(), moduleOp.getBody()->begin());
+      auto f32Type = rewriter.getF32Type();
+      auto funcType = LLVM::LLVMFunctionType::get(f32Type, {f32Type});
+      logfFunc = builder.create<LLVM::LLVMFuncOp>(
+          moduleOp.getLoc(), "__nv_logf", funcType);
+    }
+    
+    // Create function call
+    auto callOp = rewriter.create<LLVM::CallOp>(
+        op.getLoc(), logfFunc, op.getOperand());
+    
+    rewriter.replaceOp(op, callOp.getResult());
+    return success();
+  }
+};
+
+struct ConvertMathLog2 : public OpConversionPattern<math::Log2Op> {
+  ConvertMathLog2(mlir::MLIRContext *context)
+      : OpConversionPattern<math::Log2Op>(context) {}
+
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(math::Log2Op op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    auto moduleOp = op->getParentOfType<mlir::ModuleOp>();
+    
+    // Check if __nv_log2f function is already declared
+    auto log2fFunc = moduleOp.lookupSymbol<LLVM::LLVMFuncOp>("__nv_log2f");
+    if (!log2fFunc) {
+      // Create function declaration for __nv_log2f
+      OpBuilder builder(moduleOp.getBody(), moduleOp.getBody()->begin());
+      auto f32Type = rewriter.getF32Type();
+      auto funcType = LLVM::LLVMFunctionType::get(f32Type, {f32Type});
+      log2fFunc = builder.create<LLVM::LLVMFuncOp>(
+          moduleOp.getLoc(), "__nv_log2f", funcType);
+    }
+    
+    // Create function call
+    auto callOp = rewriter.create<LLVM::CallOp>(
+        op.getLoc(), log2fFunc, op.getOperand());
+    
+    rewriter.replaceOp(op, callOp.getResult());
+    return success();
+  }
+};
+
 struct OvenToLLVM : impl::OvenToLLVMBase<OvenToLLVM> {
   using OvenToLLVMBase::OvenToLLVMBase;
 
@@ -134,10 +291,17 @@ struct OvenToLLVM : impl::OvenToLLVMBase<OvenToLLVM> {
     target.addLegalDialect<func::FuncDialect>();
     target.addLegalDialect<LLVM::LLVMDialect>();
     target.addIllegalDialect<oven::OvenDialect>();
-
+    target.addIllegalOp<math::CosOp>();
+    target.addIllegalOp<math::SinOp>();
+    target.addIllegalOp<math::TanOp>();
+    target.addIllegalOp<math::LogOp>();
+    target.addIllegalOp<math::Log2Op>();
+    
     RewritePatternSet patterns(context);
     patterns.add<ConvertLoad, ConvertStore, ConvertSmem>(context);
     patterns.add<ConvertVload, ConvertVstore>(context);
+    patterns.add<ConvertMathCos, ConvertMathSin>(context);
+    patterns.add<ConvertMathTan, ConvertMathLog, ConvertMathLog2>(context);
 
     if (failed(applyPartialConversion(module, target, std::move(patterns)))) {
       signalPassFailure();

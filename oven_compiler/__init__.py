@@ -20,7 +20,7 @@ Example usage:
     result = optimizer.optimize_mlir(mlir_code)
 """
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 __author__ = "Oven MLIR Team"
 
 # Import the native module
