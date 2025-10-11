@@ -4,6 +4,7 @@
 #include "mlir/IR/BuiltinOps.h"   // from @llvm-project
 #include "mlir/IR/BuiltinTypes.h" // from @llvm-project
 #include "mlir/IR/Dialect.h"      // from @llvm-project
+#include "mlir/Interfaces/InferTypeOpInterface.h"
 
 #include "lib/Dialect/Oven/IR/OvenDialect.h"
 

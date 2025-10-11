@@ -7,19 +7,19 @@ nanobind_add_module(
   oven_opt_bindings.cpp
 )
 
-# Get all MLIR libraries
+# Get all MLIR libraries to avoid missing symbols
 get_property(mlir_libs GLOBAL PROPERTY MLIR_ALL_LIBS)
 
-# Link against MLIR libraries and oven libraries
+# Link against all MLIR libraries
 target_link_libraries(oven_opt_py PRIVATE
-  # Link all MLIR libraries to avoid missing symbols
+  # All MLIR libraries to avoid missing symbols
   ${mlir_libs}
   
-  # Oven specific libraries
-  ${PROJECT_BINARY_DIR}/lib/Dialect/Oven/IR/libMLIROven.a
-  ${PROJECT_BINARY_DIR}/lib/Dialect/Oven/Transform/libOvenPasses.a
-  ${PROJECT_BINARY_DIR}/lib/Conversion/OvenToLLVM/libOvenToLLVM.a
-  ${PROJECT_BINARY_DIR}/lib/Conversion/AddNVVMKernel/libAddNVVMKernel.a
+  # Oven specific libraries (use target names instead of paths)
+  MLIROven
+  OvenPasses
+  OvenToLLVM
+  AddNVVMKernel
 )
 
 # Add include directories

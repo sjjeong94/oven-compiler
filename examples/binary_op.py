@@ -50,10 +50,10 @@ def vadd(a_ptr: ol.ptr, b_ptr: ol.ptr, c_ptr: ol.ptr):
     bid = ol.get_bid_x()
     tid = ol.get_tid_x()
     idx = (bid * bsize + tid) * 4
-    x_value = ol.vload(a_ptr, idx, 4)
-    y_value = ol.vload(b_ptr, idx, 4)
+    x_value = ol.vload(a_ptr, idx)
+    y_value = ol.vload(b_ptr, idx)
     z_value = x_value + y_value
-    ol.vstore(z_value, c_ptr, idx, 4)
+    ol.vstore(z_value, c_ptr, idx)
 
 
 def vmul(a_ptr: ol.ptr, b_ptr: ol.ptr, c_ptr: ol.ptr):
@@ -61,10 +61,10 @@ def vmul(a_ptr: ol.ptr, b_ptr: ol.ptr, c_ptr: ol.ptr):
     bid = ol.get_bid_x()
     tid = ol.get_tid_x()
     idx = (bid * bsize + tid) * 4
-    x_value = ol.vload(a_ptr, idx, 4)
-    y_value = ol.vload(b_ptr, idx, 4)
+    x_value = ol.vload(a_ptr, idx)
+    y_value = ol.vload(b_ptr, idx)
     z_value = x_value * y_value
-    ol.vstore(z_value, c_ptr, idx, 4)
+    ol.vstore(z_value, c_ptr, idx)
 
 
 def vsub(a_ptr: ol.ptr, b_ptr: ol.ptr, c_ptr: ol.ptr):
@@ -72,10 +72,10 @@ def vsub(a_ptr: ol.ptr, b_ptr: ol.ptr, c_ptr: ol.ptr):
     bid = ol.get_bid_x()
     tid = ol.get_tid_x()
     idx = (bid * bsize + tid) * 4
-    x_value = ol.vload(a_ptr, idx, 4)
-    y_value = ol.vload(b_ptr, idx, 4)
+    x_value = ol.vload(a_ptr, idx)
+    y_value = ol.vload(b_ptr, idx)
     z_value = x_value - y_value
-    ol.vstore(z_value, c_ptr, idx, 4)
+    ol.vstore(z_value, c_ptr, idx)
 
 
 def vdiv(a_ptr: ol.ptr, b_ptr: ol.ptr, c_ptr: ol.ptr):
@@ -83,7 +83,7 @@ def vdiv(a_ptr: ol.ptr, b_ptr: ol.ptr, c_ptr: ol.ptr):
     bid = ol.get_bid_x()
     tid = ol.get_tid_x()
     idx = (bid * bsize + tid) * 4
-    x_value = ol.vload(a_ptr, idx, 4)
-    y_value = ol.vload(b_ptr, idx, 4)
+    x_value = ol.vload(a_ptr, idx)
+    y_value = ol.vload(b_ptr, idx)
     z_value = x_value / y_value
-    ol.vstore(z_value, c_ptr, idx, 4)
+    ol.vstore(z_value, c_ptr, idx)

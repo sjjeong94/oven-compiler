@@ -1,86 +1,77 @@
-// Generated MLIR code from Python source
-
-func.func @sigmoid(%x_ptr: !llvm.ptr, %y_ptr: !llvm.ptr) {
-  %0 = nvvm.read.ptx.sreg.ntid.x : i32
-  %1 = nvvm.read.ptx.sreg.ctaid.x : i32
-  %2 = nvvm.read.ptx.sreg.tid.x : i32
-  %3 = arith.muli %1, %0 : i32
-  %4 = arith.addi %3, %2 : i32
-  %5 = oven.load %x_ptr, %4 : (!llvm.ptr, i32) -> f32
-  %6 = oven.sigmoid %5 : f32 -> f32
-  oven.store %6, %y_ptr, %4 : (f32, !llvm.ptr, i32)
+func.func @sigmoid(%0: !llvm.ptr, %1: !llvm.ptr) {
+  %2 = nvvm.read.ptx.sreg.ntid.x : i32
+  %3 = nvvm.read.ptx.sreg.ctaid.x : i32
+  %4 = nvvm.read.ptx.sreg.tid.x : i32
+  %5 = arith.muli %3, %2 : i32
+  %6 = arith.addi %5, %4 : i32
+  %7 = oven.load %0, %6 : (!llvm.ptr, i32) -> f32
+  %8 = oven.sigmoid %7 : f32
+  oven.store %8, %1, %6 : (f32, !llvm.ptr, i32)
   return
 }
-
-func.func @exp(%x_ptr: !llvm.ptr, %y_ptr: !llvm.ptr) {
-  %7 = nvvm.read.ptx.sreg.ntid.x : i32
-  %8 = nvvm.read.ptx.sreg.ctaid.x : i32
-  %9 = nvvm.read.ptx.sreg.tid.x : i32
-  %10 = arith.muli %8, %7 : i32
-  %11 = arith.addi %10, %9 : i32
-  %12 = oven.load %x_ptr, %11 : (!llvm.ptr, i32) -> f32
-  %13 = math.exp %12 : f32
-  oven.store %13, %y_ptr, %11 : (f32, !llvm.ptr, i32)
+func.func @exp(%9: !llvm.ptr, %10: !llvm.ptr) {
+  %11 = nvvm.read.ptx.sreg.ntid.x : i32
+  %12 = nvvm.read.ptx.sreg.ctaid.x : i32
+  %13 = nvvm.read.ptx.sreg.tid.x : i32
+  %14 = arith.muli %12, %11 : i32
+  %15 = arith.addi %14, %13 : i32
+  %16 = oven.load %9, %15 : (!llvm.ptr, i32) -> f32
+  %17 = math.exp %16 : f32
+  oven.store %17, %10, %15 : (f32, !llvm.ptr, i32)
   return
 }
-
-func.func @sqrt(%x_ptr: !llvm.ptr, %y_ptr: !llvm.ptr) {
-  %14 = nvvm.read.ptx.sreg.ntid.x : i32
-  %15 = nvvm.read.ptx.sreg.ctaid.x : i32
-  %16 = nvvm.read.ptx.sreg.tid.x : i32
-  %17 = arith.muli %15, %14 : i32
-  %18 = arith.addi %17, %16 : i32
-  %19 = oven.load %x_ptr, %18 : (!llvm.ptr, i32) -> f32
-  %20 = math.sqrt %19 : f32
-  oven.store %20, %y_ptr, %18 : (f32, !llvm.ptr, i32)
+func.func @sqrt(%18: !llvm.ptr, %19: !llvm.ptr) {
+  %20 = nvvm.read.ptx.sreg.ntid.x : i32
+  %21 = nvvm.read.ptx.sreg.ctaid.x : i32
+  %22 = nvvm.read.ptx.sreg.tid.x : i32
+  %23 = arith.muli %21, %20 : i32
+  %24 = arith.addi %23, %22 : i32
+  %25 = oven.load %18, %24 : (!llvm.ptr, i32) -> f32
+  %26 = math.sqrt %25 : f32
+  oven.store %26, %19, %24 : (f32, !llvm.ptr, i32)
   return
 }
-
-func.func @abs(%x_ptr: !llvm.ptr, %y_ptr: !llvm.ptr) {
-  %21 = nvvm.read.ptx.sreg.ntid.x : i32
-  %22 = nvvm.read.ptx.sreg.ctaid.x : i32
-  %23 = nvvm.read.ptx.sreg.tid.x : i32
-  %24 = arith.muli %22, %21 : i32
-  %25 = arith.addi %24, %23 : i32
-  %26 = oven.load %x_ptr, %25 : (!llvm.ptr, i32) -> f32
-  %27 = math.absf %26 : f32
-  oven.store %27, %y_ptr, %25 : (f32, !llvm.ptr, i32)
+func.func @abs(%27: !llvm.ptr, %28: !llvm.ptr) {
+  %29 = nvvm.read.ptx.sreg.ntid.x : i32
+  %30 = nvvm.read.ptx.sreg.ctaid.x : i32
+  %31 = nvvm.read.ptx.sreg.tid.x : i32
+  %32 = arith.muli %30, %29 : i32
+  %33 = arith.addi %32, %31 : i32
+  %34 = oven.load %27, %33 : (!llvm.ptr, i32) -> f32
+  %35 = math.absf %34 : f32
+  oven.store %35, %28, %33 : (f32, !llvm.ptr, i32)
   return
 }
-
-func.func @ceil(%x_ptr: !llvm.ptr, %y_ptr: !llvm.ptr) {
-  %28 = nvvm.read.ptx.sreg.ntid.x : i32
-  %29 = nvvm.read.ptx.sreg.ctaid.x : i32
-  %30 = nvvm.read.ptx.sreg.tid.x : i32
-  %31 = arith.muli %29, %28 : i32
-  %32 = arith.addi %31, %30 : i32
-  %33 = oven.load %x_ptr, %32 : (!llvm.ptr, i32) -> f32
-  %34 = math.ceil %33 : f32
-  oven.store %34, %y_ptr, %32 : (f32, !llvm.ptr, i32)
+func.func @ceil(%36: !llvm.ptr, %37: !llvm.ptr) {
+  %38 = nvvm.read.ptx.sreg.ntid.x : i32
+  %39 = nvvm.read.ptx.sreg.ctaid.x : i32
+  %40 = nvvm.read.ptx.sreg.tid.x : i32
+  %41 = arith.muli %39, %38 : i32
+  %42 = arith.addi %41, %40 : i32
+  %43 = oven.load %36, %42 : (!llvm.ptr, i32) -> f32
+  %44 = math.ceil %43 : f32
+  oven.store %44, %37, %42 : (f32, !llvm.ptr, i32)
   return
 }
-
-func.func @floor(%x_ptr: !llvm.ptr, %y_ptr: !llvm.ptr) {
-  %35 = nvvm.read.ptx.sreg.ntid.x : i32
-  %36 = nvvm.read.ptx.sreg.ctaid.x : i32
-  %37 = nvvm.read.ptx.sreg.tid.x : i32
-  %38 = arith.muli %36, %35 : i32
-  %39 = arith.addi %38, %37 : i32
-  %40 = oven.load %x_ptr, %39 : (!llvm.ptr, i32) -> f32
-  %41 = math.floor %40 : f32
-  oven.store %41, %y_ptr, %39 : (f32, !llvm.ptr, i32)
+func.func @floor(%45: !llvm.ptr, %46: !llvm.ptr) {
+  %47 = nvvm.read.ptx.sreg.ntid.x : i32
+  %48 = nvvm.read.ptx.sreg.ctaid.x : i32
+  %49 = nvvm.read.ptx.sreg.tid.x : i32
+  %50 = arith.muli %48, %47 : i32
+  %51 = arith.addi %50, %49 : i32
+  %52 = oven.load %45, %51 : (!llvm.ptr, i32) -> f32
+  %53 = math.floor %52 : f32
+  oven.store %53, %46, %51 : (f32, !llvm.ptr, i32)
   return
 }
-
-func.func @rsqrt(%x_ptr: !llvm.ptr, %y_ptr: !llvm.ptr) {
-  %42 = nvvm.read.ptx.sreg.ntid.x : i32
-  %43 = nvvm.read.ptx.sreg.ctaid.x : i32
-  %44 = nvvm.read.ptx.sreg.tid.x : i32
-  %45 = arith.muli %43, %42 : i32
-  %46 = arith.addi %45, %44 : i32
-  %47 = oven.load %x_ptr, %46 : (!llvm.ptr, i32) -> f32
-  %48 = math.rsqrt %47 : f32
-  oven.store %48, %y_ptr, %46 : (f32, !llvm.ptr, i32)
+func.func @rsqrt(%54: !llvm.ptr, %55: !llvm.ptr) {
+  %56 = nvvm.read.ptx.sreg.ntid.x : i32
+  %57 = nvvm.read.ptx.sreg.ctaid.x : i32
+  %58 = nvvm.read.ptx.sreg.tid.x : i32
+  %59 = arith.muli %57, %56 : i32
+  %60 = arith.addi %59, %58 : i32
+  %61 = oven.load %54, %60 : (!llvm.ptr, i32) -> f32
+  %62 = math.rsqrt %61 : f32
+  oven.store %62, %55, %60 : (f32, !llvm.ptr, i32)
   return
 }
-
