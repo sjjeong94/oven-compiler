@@ -17,24 +17,27 @@ cd "$PROJECT_ROOT"
 if [[ ! -f "oven_compiler/oven_opt_py"*".so" ]]; then
     echo "⚡ Building native modules first..."
     
+    # Install nanobind first for Python bindings
+    echo "📦 Installing nanobind for Python bindings..."
+    pip install nanobind
+    
     # Set up build directory with proper CMake configuration
-    if [[ ! -f "build/Makefile" && ! -f "build/build.ninja" ]]; then
-        echo "🔧 Setting up CMake configuration..."
-        rm -rf build
-        mkdir -p build
-        cd build
-        
-        if [[ -d "../llvm-project/build" ]]; then
-            cmake .. -DCMAKE_BUILD_TYPE=Release \
-                    -DMLIR_DIR="$PWD/../llvm-project/build/lib/cmake/mlir" \
-                    -DLLVM_DIR="$PWD/../llvm-project/build/lib/cmake/llvm"
-        else
-            echo "❌ LLVM/MLIR not found. Please run install_mlir.sh first:"
-            echo "   ./scripts/install_mlir.sh"
-            exit 1
-        fi
-        cd "$PROJECT_ROOT"
+    # Force reconfigure to detect nanobind
+    echo "🔧 Setting up CMake configuration..."
+    rm -rf build
+    mkdir -p build
+    cd build
+
+    if [[ -d "../../llvm-project/build" ]]; then
+        cmake .. -DCMAKE_BUILD_TYPE=Release \
+                -DMLIR_DIR="$PWD/../../llvm-project/build/lib/cmake/mlir" \
+                -DLLVM_DIR="$PWD/../../llvm-project/build/lib/cmake/llvm"
+    else
+        echo "❌ LLVM/MLIR not found. Please run install_mlir.sh first:"
+        echo "   ./scripts/install_mlir.sh"
+        exit 1
     fi
+    cd "$PROJECT_ROOT"
     
     # Build native modules and tools
     cd build
@@ -63,17 +66,26 @@ if [[ ! -f "oven_compiler/oven_opt_py"*".so" ]]; then
     if echo "$AVAILABLE_TARGETS" | grep -q "oven_opt_py"; then
         echo "🐍 Building Python bindings..."
         if [[ -f "build.ninja" ]]; then
-            ninja oven_opt_py
+            if ninja oven_opt_py; then
+                # Copy built modules to the correct location
+                find . -name "oven_opt_py*.so" -exec cp {} "$PROJECT_ROOT/oven_compiler/" \;
+                echo "✅ Python bindings built and copied"
+            else
+                echo "⚠️ Python bindings build failed, continuing without native modules"
+            fi
         else
-            make oven_opt_py -j$(nproc)
+            if make oven_opt_py -j$(nproc); then
+                # Copy built modules to the correct location
+                find . -name "oven_opt_py*.so" -exec cp {} "$PROJECT_ROOT/oven_compiler/" \;
+                echo "✅ Python bindings built and copied"
+            else
+                echo "⚠️ Python bindings build failed, continuing without native modules"
+            fi
         fi
-        
-        # Copy built modules to the correct location
-        find . -name "oven_opt_py*.so" -exec cp {} "$PROJECT_ROOT/oven_compiler/" \;
-        echo "✅ Python bindings built and copied"
     else
-        echo "⚠️ Python bindings target not available (nanobind may not be found)"
-        echo "   Continuing with oven-opt tool only..."
+        echo "⚠️ Python bindings target not available"
+        echo "   This usually means nanobind was not detected during CMake configuration"
+        echo "   Package will be built with Python-only functionality"
     fi
     
     # Create tools directory if it doesn't exist and copy oven-opt

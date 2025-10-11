@@ -75,10 +75,6 @@ result = compiler.compile_with_intermediate_files(
 - NVIDIA GPU (for execution)
 - CUDA Toolkit (recommended)
 
-## Contributing
-
-Contributions welcome! Visit our [GitHub repository](https://github.com/sjjeong94/oven).
-
 ## License
 
 MIT License

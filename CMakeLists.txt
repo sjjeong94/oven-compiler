@@ -6,6 +6,9 @@ set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard to conform to")
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(BUILD_DEPS ON)
 
+# Set LLVM and MLIR directories (LLVM is in parent directory)
+set(LLVM_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../llvm-project/build/lib/cmake/llvm")
+set(MLIR_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../llvm-project/build/lib/cmake/mlir")
 find_package(MLIR REQUIRED CONFIG)
 
 # Find Python and nanobind for Python bindings
