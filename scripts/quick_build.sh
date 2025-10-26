@@ -54,14 +54,6 @@ if [[ ! -f "oven_compiler/oven_opt_py"*".so" ]]; then
     
     echo "📋 Available targets: $AVAILABLE_TARGETS"
     
-    # Build oven-opt (always available)
-    echo "🔨 Building oven-opt..."
-    if [[ -f "build.ninja" ]]; then
-        ninja oven-opt
-    else
-        make oven-opt -j$(nproc)
-    fi
-    
     # Try to build Python bindings if target exists
     if echo "$AVAILABLE_TARGETS" | grep -q "oven_opt_py"; then
         echo "🐍 Building Python bindings..."

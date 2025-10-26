@@ -50,7 +50,6 @@ include_directories(${PROJECT_SOURCE_DIR}/llvm-project/llvm/include)
 include_directories(${PROJECT_SOURCE_DIR}/llvm-project/mlir/include)
 
 add_subdirectory(lib)
-add_subdirectory(tools)
 
 # Only add Python bindings if nanobind is available
 if(NANOBIND_FOUND)

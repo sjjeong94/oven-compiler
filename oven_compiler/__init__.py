@@ -20,7 +20,7 @@ Example usage:
     result = optimizer.optimize_mlir(mlir_code)
 """
 
-__version__ = "0.1.6"
+__version__ = "0.1.7"
 
 # Import the native module
 try:
